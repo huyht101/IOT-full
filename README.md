@@ -129,7 +129,7 @@ or
   "ok": false,
   "error": {
     "code": "SOME_CODE",
-    "message": "Human readable message"
+    "message": "Some message"
   }
 }
 ```
