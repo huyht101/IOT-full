@@ -14,6 +14,8 @@ const {
 const AppError = require('./appError');
 const { toIsoString } = require('./time');
 
+const DATETIME_PATTERN = /^\d{4}-\d{2}-\d{2}(?:[T\s]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?)?(?:Z|[+-]\d{2}:\d{2})?$/;
+
 function parsePositiveInteger(value, fallback, fieldName) {
   if (value === undefined || value === null || value === '') {
     return fallback;
@@ -56,14 +58,47 @@ function sanitizeSearchQuery(value) {
   return trimmed;
 }
 
-function parseDatetime(value, fieldName) {
+function normalizeDatetimeInput(value) {
+  const normalized = value.replace(' ', 'T');
+  const hasTime = normalized.includes('T');
+  const hasTimezone = /Z$|[+-]\d{2}:\d{2}$/.test(normalized);
+
+  if (!hasTime) {
+    return `${normalized}T00:00:00.000Z`;
+  }
+
+  if (!hasTimezone) {
+    return `${normalized}Z`;
+  }
+
+  return normalized;
+}
+
+function parseDatetime(value, fieldName, options = {}) {
   if (value === undefined || value === null || value === '') {
     return null;
   }
 
-  const parsed = new Date(value);
+  const rawValue = String(value).trim();
+  if (!rawValue) {
+    return null;
+  }
+
+  if (!DATETIME_PATTERN.test(rawValue)) {
+    throw new AppError(
+      400,
+      'VALIDATION_ERROR',
+      `${fieldName} must be a valid datetime string`
+    );
+  }
+
+  const parsed = new Date(normalizeDatetimeInput(rawValue));
   if (Number.isNaN(parsed.getTime())) {
-    throw new AppError(400, 'VALIDATION_ERROR', `${fieldName} must be a valid ISO datetime`);
+    throw new AppError(400, 'VALIDATION_ERROR', `${fieldName} must be a valid datetime`);
+  }
+
+  if (options.rejectFuture && parsed.getTime() > Date.now()) {
+    throw new AppError(400, 'VALIDATION_ERROR', `${fieldName} cannot be in the future`);
   }
 
   return parsed;
@@ -112,7 +147,7 @@ function validateTogglePayload(body) {
 }
 
 function validateRealtimeSince(query) {
-  const since = parseDatetime(query.since, 'since');
+  const since = parseDatetime(query.since, 'since', { rejectFuture: true });
   if (!since) {
     throw new AppError(400, 'VALIDATION_ERROR', 'since is required');
   }

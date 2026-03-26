@@ -57,6 +57,7 @@ CREATE TABLE actions (
     ON UPDATE RESTRICT
     ON DELETE RESTRICT,
   KEY idx_actions_device_req (device_id, requested_at),
+  KEY idx_actions_device_status_req (device_id, status, requested_at),
   KEY idx_actions_status_req (status, requested_at),
   KEY idx_actions_req (requested_at)
 ) ENGINE=InnoDB;

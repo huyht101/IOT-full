@@ -1,6 +1,6 @@
 # IoT Demo Backend MVP
 
-Node.js + Express + MySQL + MQTT backend skeleton for the locked IoT demo MVP.
+Node.js + Express + MySQL + MQTT backend for the locked IoT demo MVP.
 
 ## Current MVP assumptions
 
@@ -8,7 +8,6 @@ Node.js + Express + MySQL + MQTT backend skeleton for the locked IoT demo MVP.
 - Current board publishes 3 sensors: `TEMP`, `HUM`, `LIGHT`.
 - Current board controls 3 devices: `LED1`, `LED2`, `LED3`.
 - No auth.
-- Backend serves only the current MVP endpoints.
 - Dashboard updates by HTTP polling every 2 seconds.
 - MQTT telemetry is a full device snapshot every 2 seconds.
 - MQTT ACK is per-device and keyed by `action_id`.
@@ -29,22 +28,24 @@ Node.js + Express + MySQL + MQTT backend skeleton for the locked IoT demo MVP.
 
 ```text
 .
-├─ sql/
-│  └─ init.sql
-├─ src/
-│  ├─ config/
-│  ├─ constants/
-│  ├─ controllers/
-│  ├─ middleware/
-│  ├─ mqtt/
-│  ├─ repositories/
-│  ├─ routes/
-│  ├─ services/
-│  ├─ utils/
-│  ├─ app.js
-│  └─ server.js
-├─ .env.example
-└─ package.json
+|-- SQL/
+|   `-- init.sql
+|-- src/
+|   |-- config/
+|   |-- constants/
+|   |-- controllers/
+|   |-- middleware/
+|   |-- mqtt/
+|   |-- repositories/
+|   |-- routes/
+|   |-- services/
+|   |-- utils/
+|   |-- app.js
+|   `-- server.js
+|-- .env.example
+|-- package.json
+`-- scripts/
+    `-- check-syntax.js
 ```
 
 ## Setup
@@ -55,11 +56,15 @@ Node.js + Express + MySQL + MQTT backend skeleton for the locked IoT demo MVP.
 npm install
 ```
 
+`node_modules` is local-only and should not be committed. After cloning or pulling the repo, run `npm install` to restore dependencies locally.
+
 2. Create `.env` from `.env.example`:
 
 ```powershell
 Copy-Item .env.example .env
 ```
+
+`.env` is a local-only file and is ignored by git.
 
 3. Initialize MySQL:
 
@@ -77,6 +82,12 @@ npm run dev
 
 ```bash
 npm start
+```
+
+6. Run the syntax check across the whole `src/` tree:
+
+```bash
+npm run check
 ```
 
 ## Environment variables
@@ -112,6 +123,8 @@ npm start
 - `POST /api/v1/devices/:device_id/toggle`
 - `GET /api/v1/actions`
 - `GET /api/v1/sensor-readings`
+
+For `GET /api/v1/dashboard/realtime`, `since` should come from the backend timestamp returned by the dashboard APIs. Future values are rejected.
 
 All responses use the same wrapper:
 
@@ -156,11 +169,11 @@ or
 
 - Add future automation:
   - Reuse `src/services/deviceCommand.service.js`
-  - Do not duplicate MQTT publish / ACK / DB action logic elsewhere
+  - Do not duplicate MQTT publish, ACK, and DB action logic elsewhere
 
 ## Current limitations to note
 
-- The current `actions` table does not record whether the action source was manual UI or future automation. That should be revisited later if source tracking becomes important.
+- The current `actions` table does not record whether the action source was manual UI or future automation.
 - Pending ACK tracking is in-memory for this single-process MVP. A multi-instance deployment would need shared coordination.
 - Current telemetry parsing is intentionally locked to the MVP payload shape with `temp`, `hum`, `light`, and a full `devices[]` snapshot.
 
