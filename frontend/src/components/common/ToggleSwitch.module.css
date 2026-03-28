@@ -1,0 +1,40 @@
+.switch {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.track {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  border-radius: 999px;
+  background: #bbc3d6;
+  transition: background-color 160ms ease;
+}
+
+.thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 4px 10px rgba(34, 42, 65, 0.18);
+  transform: translateX(0);
+  transition: transform 160ms ease;
+}
+
+.checked .track {
+  background: var(--accent);
+}
+
+.checked .thumb {
+  transform: translateX(22px);
+}
+
+.disabled {
+  cursor: wait;
+  opacity: 0.68;
+}

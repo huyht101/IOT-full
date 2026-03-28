@@ -28,6 +28,8 @@ Node.js + Express + MySQL + MQTT backend for the locked IoT demo MVP.
 
 ```text
 .
+|-- docs/
+|   `-- backend-mvp-integration-checklist-windows.md
 |-- SQL/
 |   `-- init.sql
 |-- src/
@@ -89,6 +91,12 @@ npm start
 ```bash
 npm run check
 ```
+
+## Manual integration checklist
+
+For a full Windows step-by-step backend verification flow, including exact MQTT payloads, API requests, DB checks, and expected logs, use:
+
+- `docs/backend-mvp-integration-checklist-windows.md`
 
 ## Environment variables
 

@@ -1,0 +1,9 @@
+.footer {
+  height: 66px;
+  display: grid;
+  place-items: center;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(180deg, #f3f5fb 0%, #eef2f8 100%);
+  color: var(--text-muted);
+  font-size: 0.98rem;
+}

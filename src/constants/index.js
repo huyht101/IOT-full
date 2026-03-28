@@ -67,6 +67,7 @@ const ACTION_HISTORY_SORT_MAP = Object.freeze({
 });
 
 const SENSOR_HISTORY_SORT_MAP = Object.freeze({
+  reading_id: 'sr.reading_id',
   ts: 'sr.ts',
   sensor_code: 's.sensor_code',
   sensor_type: 's.sensor_type',

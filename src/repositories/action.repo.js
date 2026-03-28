@@ -1,8 +1,28 @@
 const { pool } = require('../config/db');
 const { ACTION_HISTORY_SORT_MAP, ACTION_STATUSES } = require('../constants');
 
+const DISPLAY_TIME_OFFSET_HOURS = 7;
+
 function getExecutor(executor) {
   return executor || pool;
+}
+
+function buildTimeSearchLikeValue(value) {
+  return `${String(value).replace(/T/g, ' ')}%`;
+}
+
+function buildDisplayTimeSearchExpression(columnName) {
+  // Match the fixed UTC+07 display convention used by the frontend.
+  return `DATE_FORMAT(DATE_ADD(${columnName}, INTERVAL ${DISPLAY_TIME_OFFSET_HOURS} HOUR), '%Y-%m-%d %H:%i:%s')`;
+}
+
+function parseNumericSearchValue(value) {
+  if (!/^\d+$/.test(String(value))) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isSafeInteger(parsed) ? parsed : null;
 }
 
 async function findPendingActionByDeviceId(executor, deviceId) {
@@ -94,8 +114,22 @@ function buildActionHistoryWhere(filters) {
 
   if (filters.q) {
     const likeValue = `%${filters.q}%`;
-    clauses.push('(d.device_code LIKE ? OR d.device_name LIKE ?)');
-    params.push(likeValue, likeValue);
+    const timeLikeValue = buildTimeSearchLikeValue(filters.q);
+    const searchClauses = [
+      `${buildDisplayTimeSearchExpression('a.requested_at')} LIKE ?`,
+      'd.device_code LIKE ?',
+      'd.device_name LIKE ?',
+    ];
+    const searchParams = [timeLikeValue, likeValue, likeValue];
+    const numericSearchValue = parseNumericSearchValue(filters.q);
+
+    if (numericSearchValue !== null) {
+      searchClauses.push('a.action_id = ?', 'a.device_id = ?');
+      searchParams.push(numericSearchValue, numericSearchValue);
+    }
+
+    clauses.push(`(${searchClauses.join(' OR ')})`);
+    params.push(...searchParams);
   }
 
   if (filters.deviceType) {
@@ -155,7 +189,9 @@ async function listActions(filters) {
   const orderBy = ACTION_HISTORY_SORT_MAP[filters.sortBy];
   const direction = filters.sortDir === 'asc' ? 'ASC' : 'DESC';
 
-  const [rows] = await pool.execute(
+  // Use text protocol here because the current MySQL setup rejects prepared
+  // LIMIT/OFFSET placeholders on this paginated history query path.
+  const [rows] = await pool.query(
     `
       SELECT
         a.action_id,

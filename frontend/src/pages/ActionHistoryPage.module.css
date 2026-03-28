@@ -1,0 +1,90 @@
+.page {
+  display: grid;
+  gap: 26px;
+}
+
+.pageHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.title {
+  margin: 0;
+  font-size: 2.05rem;
+  line-height: 1.1;
+}
+
+.card {
+  padding: 26px 26px 24px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.7fr) repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.tableWrap {
+  overflow: auto;
+}
+
+.table th {
+  padding: 18px 16px;
+  color: var(--text-muted);
+  font-weight: 700;
+  border-bottom: 1px solid var(--border);
+}
+
+.table td {
+  padding: 16px;
+  border-bottom: 1px solid #edf1f7;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #fafbff;
+}
+
+.footerRow {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.pageSizeControl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-muted);
+}
+
+.pageSizeSelect {
+  width: 86px;
+}
+
+.paginationBlock {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.pageInfo {
+  color: var(--text-muted);
+}
+
+.inlineError {
+  margin-bottom: 18px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--danger-soft);
+  color: #dc2626;
+  font-weight: 600;
+}

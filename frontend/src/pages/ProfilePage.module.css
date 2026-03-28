@@ -1,0 +1,113 @@
+.page {
+  display: grid;
+  justify-items: center;
+  gap: 34px;
+  padding-top: 8px;
+}
+
+.title {
+  margin: 28px 0 0;
+  font-size: 2.1rem;
+  text-align: center;
+}
+
+.profileCard {
+  width: min(640px, 100%);
+  padding: 34px 28px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  box-shadow: var(--shadow-sm);
+  text-align: center;
+}
+
+.avatarWrap {
+  position: relative;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(145deg, #ff9d23 0%, #ff7a00 100%);
+  box-shadow: 0 0 0 16px rgba(34, 197, 94, 0.09);
+}
+
+.onlineDot {
+  position: absolute;
+  right: -2px;
+  bottom: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--success);
+  box-shadow: 0 0 0 3px #ffffff;
+}
+
+.name {
+  margin: 22px 0 8px;
+  font-size: 2rem;
+}
+
+.role,
+.email,
+.bio {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.role {
+  font-size: 1.15rem;
+}
+
+.email {
+  margin-top: 8px;
+}
+
+.bio {
+  max-width: 420px;
+  margin: 14px auto 0;
+  line-height: 1.6;
+}
+
+.resourcesSection {
+  width: min(640px, 100%);
+}
+
+.sectionTitle {
+  margin: 0 0 18px;
+  text-align: center;
+  font-size: 1.9rem;
+}
+
+.resourceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.resourceCard {
+  min-height: 64px;
+  padding: 0 22px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.primary {
+  background: linear-gradient(135deg, #686ff7 0%, #5861e8 100%);
+  border-color: transparent;
+  color: #ffffff;
+}

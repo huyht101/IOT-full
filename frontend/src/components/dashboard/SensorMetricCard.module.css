@@ -1,0 +1,69 @@
+.card {
+  min-height: 176px;
+  padding: 28px 30px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
+  box-shadow: var(--shadow-sm);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 10px 0 0;
+  color: var(--text-muted);
+  font-size: 0.96rem;
+}
+
+.iconWrap {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #4b556a;
+}
+
+.metricRow {
+  margin-top: 26px;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.value {
+  font-size: 3rem;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.unit {
+  padding-bottom: 7px;
+  color: #55607a;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.indigo .value {
+  color: var(--accent);
+}
+
+.green .value {
+  color: var(--success);
+}
+
+.amber .value {
+  color: var(--light-accent);
+}

@@ -1,0 +1,41 @@
+.page {
+  display: grid;
+  gap: 30px;
+}
+
+.notice {
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-weight: 600;
+}
+
+.success {
+  background: var(--success-soft);
+  border-color: rgba(34, 197, 94, 0.16);
+  color: #15803d;
+}
+
+.error {
+  background: var(--danger-soft);
+  border-color: rgba(239, 68, 68, 0.16);
+  color: #dc2626;
+}
+
+.warning {
+  background: var(--warning-soft);
+  border-color: rgba(245, 158, 11, 0.16);
+  color: #b45309;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.06fr 1fr;
+  gap: 28px;
+}

@@ -95,6 +95,11 @@ async function finalizeAsFail(actionId, ackedAt) {
   });
 }
 
+async function actionIsStillPending(actionId) {
+  const detail = await actionRepo.getActionDetailById(actionId);
+  return Boolean(detail && detail.status === ACTION_STATUSES.PENDING);
+}
+
 async function finalizeAsSuccess(actionId, entry, ackedAt) {
   return withTransaction(async (connection) => {
     const affectedRows = await actionRepo.updateActionStatusIfPending(connection, {
@@ -136,6 +141,23 @@ async function finalizePendingAction(actionId, options) {
       : await finalizeAsFail(actionId, options.ackedAt);
 
     if (!affectedRows) {
+      if (await actionIsStillPending(actionId)) {
+        return markEntryUnrecoverable(
+          actionId,
+          entry,
+          {
+            finalStatus: ACTION_STATUSES.FAIL,
+            reason: 'ACK_FINALIZATION_FAILED',
+            ackedAt: options.ackedAt,
+          },
+          {
+            primaryError: new Error(
+              `Action ${actionId} is still PENDING after ${options.reason} finalization returned 0 rows`
+            ),
+          }
+        );
+      }
+
       return settlePendingEntry(actionId, entry, {
         finalStatus: ACTION_STATUSES.FAIL,
         reason: options.targetStatus === ACTION_STATUSES.SUCCESS ? 'IGNORED_ACK' : options.reason,
@@ -152,7 +174,25 @@ async function finalizePendingAction(actionId, options) {
       );
 
       try {
-        await finalizeAsFail(actionId, options.ackedAt);
+        const fallbackAffectedRows = await finalizeAsFail(actionId, options.ackedAt);
+
+        if (!fallbackAffectedRows && await actionIsStillPending(actionId)) {
+          return markEntryUnrecoverable(
+            actionId,
+            entry,
+            {
+              finalStatus: ACTION_STATUSES.FAIL,
+              reason: 'ACK_PROCESSING_ERROR',
+              ackedAt: options.ackedAt,
+            },
+            {
+              primaryError: error,
+              fallbackError: new Error(
+                `Action ${actionId} is still PENDING after FAIL fallback returned 0 rows`
+              ),
+            }
+          );
+        }
 
         return settlePendingEntry(actionId, entry, {
           finalStatus: ACTION_STATUSES.FAIL,

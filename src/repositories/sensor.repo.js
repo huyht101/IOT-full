@@ -1,8 +1,28 @@
 const { pool } = require('../config/db');
 const { SENSOR_HISTORY_SORT_MAP } = require('../constants');
 
+const DISPLAY_TIME_OFFSET_HOURS = 7;
+
 function getExecutor(executor) {
   return executor || pool;
+}
+
+function buildTimeSearchLikeValue(value) {
+  return `${String(value).replace(/T/g, ' ')}%`;
+}
+
+function buildDisplayTimeSearchExpression(columnName) {
+  // Match the fixed UTC+07 display convention used by the frontend.
+  return `DATE_FORMAT(DATE_ADD(${columnName}, INTERVAL ${DISPLAY_TIME_OFFSET_HOURS} HOUR), '%Y-%m-%d %H:%i:%s')`;
+}
+
+function parseNumericSearchValue(value) {
+  if (!/^\d+$/.test(String(value))) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+  return Number.isSafeInteger(parsed) ? parsed : null;
 }
 
 async function listActiveSensors(executor) {
@@ -60,8 +80,22 @@ function buildSensorHistoryWhere(filters) {
 
   if (filters.q) {
     const likeValue = `%${filters.q}%`;
-    clauses.push('(s.sensor_code LIKE ? OR s.sensor_name LIKE ?)');
-    params.push(likeValue, likeValue);
+    const timeLikeValue = buildTimeSearchLikeValue(filters.q);
+    const searchClauses = [
+      `${buildDisplayTimeSearchExpression('sr.ts')} LIKE ?`,
+      's.sensor_code LIKE ?',
+      's.sensor_name LIKE ?',
+    ];
+    const searchParams = [timeLikeValue, likeValue, likeValue];
+    const numericSearchValue = parseNumericSearchValue(filters.q);
+
+    if (numericSearchValue !== null) {
+      searchClauses.push('sr.reading_id = ?');
+      searchParams.push(numericSearchValue);
+    }
+
+    clauses.push(`(${searchClauses.join(' OR ')})`);
+    params.push(...searchParams);
   }
 
   if (filters.sensorType) {
@@ -111,7 +145,9 @@ async function listSensorReadings(filters) {
   const orderBy = SENSOR_HISTORY_SORT_MAP[filters.sortBy];
   const direction = filters.sortDir === 'asc' ? 'ASC' : 'DESC';
 
-  const [rows] = await pool.execute(
+  // Use text protocol here because the current MySQL setup rejects prepared
+  // LIMIT/OFFSET placeholders on this paginated history query path.
+  const [rows] = await pool.query(
     `
       SELECT
         sr.reading_id,

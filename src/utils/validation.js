@@ -217,7 +217,7 @@ function parseSensorHistoryQuery(query) {
 
   const sortBy = query.sort_by && String(query.sort_by).trim()
     ? String(query.sort_by).trim()
-    : 'ts';
+    : 'reading_id';
 
   if (!Object.prototype.hasOwnProperty.call(SENSOR_HISTORY_SORT_MAP, sortBy)) {
     throw new AppError(400, 'VALIDATION_ERROR', 'sort_by is not allowed');

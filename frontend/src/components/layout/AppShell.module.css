@@ -1,0 +1,36 @@
+.frame {
+  min-height: calc(100vh - 48px);
+  margin: 24px;
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(214, 221, 237, 0.96);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+.body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 252px minmax(0, 1fr);
+  min-height: 0;
+}
+
+.content {
+  min-width: 0;
+  padding: 44px 48px 56px;
+  background:
+    radial-gradient(circle at top right, rgba(104, 113, 255, 0.08), transparent 20%),
+    linear-gradient(180deg, #fbfcff 0%, #f8faff 100%);
+}
+
+@media (max-width: 1260px) {
+  .frame {
+    margin: 12px;
+  }
+
+  .content {
+    padding: 32px 28px 40px;
+  }
+}
