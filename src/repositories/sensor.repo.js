@@ -85,8 +85,10 @@ function buildSensorHistoryWhere(filters) {
       `${buildDisplayTimeSearchExpression('sr.ts')} LIKE ?`,
       's.sensor_code LIKE ?',
       's.sensor_name LIKE ?',
+      's.sensor_type LIKE ?',
+      'CAST(sr.value_num AS CHAR) LIKE ?',
     ];
-    const searchParams = [timeLikeValue, likeValue, likeValue];
+    const searchParams = [timeLikeValue, likeValue, likeValue, likeValue, likeValue];
     const numericSearchValue = parseNumericSearchValue(filters.q);
 
     if (numericSearchValue !== null) {
