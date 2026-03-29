@@ -6,16 +6,16 @@
 
 .icon {
   position: absolute;
-  left: 14px;
+  left: 12px;
   color: var(--text-soft);
 }
 
 .input {
   width: 100%;
-  height: 42px;
-  padding: 0 16px 0 42px;
+  height: 40px;
+  padding: 0 14px 0 38px;
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 11px;
   background: #ffffff;
   color: var(--text);
   outline: none;

@@ -1,6 +1,6 @@
 .page {
   display: grid;
-  gap: 26px;
+  gap: 16px;
 }
 
 .pageHeader {
@@ -11,12 +11,12 @@
 
 .title {
   margin: 0;
-  font-size: 2.05rem;
+  font-size: 1.7rem;
   line-height: 1.1;
 }
 
 .card {
-  padding: 26px 26px 24px;
+  padding: 18px 18px 16px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: #ffffff;
@@ -25,9 +25,9 @@
 
 .filters {
   display: grid;
-  grid-template-columns: minmax(220px, 1.7fr) repeat(3, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 22px;
+  grid-template-columns: minmax(210px, 1.6fr) repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .tableWrap {
@@ -35,14 +35,14 @@
 }
 
 .table th {
-  padding: 18px 16px;
+  padding: 15px 14px;
   color: var(--text-muted);
   font-weight: 700;
   border-bottom: 1px solid var(--border);
 }
 
 .table td {
-  padding: 16px;
+  padding: 14px;
   border-bottom: 1px solid #edf1f7;
 }
 
@@ -51,7 +51,7 @@
 }
 
 .footerRow {
-  margin-top: 22px;
+  margin-top: 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -66,13 +66,13 @@
 }
 
 .pageSizeSelect {
-  width: 86px;
+  width: 80px;
 }
 
 .paginationBlock {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
@@ -81,8 +81,8 @@
 }
 
 .inlineError {
-  margin-bottom: 18px;
-  padding: 12px 14px;
+  margin-bottom: 14px;
+  padding: 10px 12px;
   border-radius: 12px;
   background: var(--danger-soft);
   color: #dc2626;

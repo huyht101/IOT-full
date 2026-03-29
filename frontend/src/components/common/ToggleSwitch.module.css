@@ -6,11 +6,11 @@
 
 .track {
   position: relative;
-  width: 48px;
-  height: 26px;
+  width: 44px;
+  height: 24px;
   display: inline-flex;
   align-items: center;
-  padding: 3px;
+  padding: 2px;
   border-radius: 999px;
   background: #bbc3d6;
   transition: background-color 160ms ease;
@@ -31,7 +31,7 @@
 }
 
 .checked .thumb {
-  transform: translateX(22px);
+  transform: translateX(20px);
 }
 
 .disabled {

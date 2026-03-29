@@ -10,8 +10,8 @@
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  min-height: 176px;
-  padding: 28px 30px;
+  min-height: 132px;
+  padding: 18px 20px;
   border: 1px solid var(--card-border);
   border-radius: var(--radius-lg);
   background: var(--card-gradient);
@@ -21,9 +21,9 @@
 .card::before {
   content: '';
   position: absolute;
-  inset: auto -34px -42px auto;
-  width: 112px;
-  height: 112px;
+  inset: auto -28px -34px auto;
+  width: 84px;
+  height: 84px;
   border-radius: 999px;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 72%);
   pointer-events: none;
@@ -39,20 +39,20 @@
 
 .title {
   margin: 0;
-  font-size: 1.55rem;
+  font-size: 1.12rem;
   font-weight: 600;
   color: #2b3447;
 }
 
 .subtitle {
-  margin: 10px 0 0;
+  margin: 6px 0 0;
   color: var(--text-muted);
-  font-size: 0.96rem;
+  font-size: 0.84rem;
 }
 
 .iconWrap {
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
   border-radius: 14px;
@@ -62,36 +62,36 @@
 }
 
 .metricRow {
-  margin-top: 26px;
+  margin-top: 16px;
   display: flex;
   align-items: flex-end;
   gap: 8px;
 }
 
 .value {
-  font-size: 3rem;
+  font-size: 2.45rem;
   line-height: 1;
   font-weight: 800;
   color: var(--value-color);
 }
 
 .unit {
-  padding-bottom: 7px;
+  padding-bottom: 6px;
   color: #55607a;
-  font-size: 1.15rem;
+  font-size: 0.98rem;
   font-weight: 600;
 }
 
 .statusPill {
-  margin-top: 18px;
+  margin-top: 10px;
   display: inline-flex;
   align-items: center;
-  min-height: 30px;
-  padding: 0 12px;
+  min-height: 26px;
+  padding: 0 10px;
   border-radius: 999px;
   background: var(--status-bg);
   color: var(--status-color);
-  font-size: 0.85rem;
+  font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.01em;
 }

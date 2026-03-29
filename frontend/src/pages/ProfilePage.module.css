@@ -1,19 +1,19 @@
 .page {
   display: grid;
   justify-items: center;
-  gap: 34px;
-  padding-top: 8px;
+  gap: 22px;
+  padding-top: 0;
 }
 
 .title {
-  margin: 28px 0 0;
-  font-size: 2.1rem;
+  margin: 10px 0 0;
+  font-size: 1.82rem;
   text-align: center;
 }
 
 .profileCard {
   width: min(640px, 100%);
-  padding: 34px 28px;
+  padding: 24px 24px;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
@@ -28,32 +28,32 @@
 }
 
 .avatar {
-  width: 72px;
-  height: 72px;
+  width: 64px;
+  height: 64px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: #ffffff;
   background: linear-gradient(145deg, #ff9d23 0%, #ff7a00 100%);
-  box-shadow: 0 0 0 16px rgba(34, 197, 94, 0.09);
+  box-shadow: 0 0 0 12px rgba(34, 197, 94, 0.09);
 }
 
 .onlineDot {
   position: absolute;
   right: -2px;
-  bottom: 6px;
-  width: 16px;
-  height: 16px;
+  bottom: 4px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--success);
   box-shadow: 0 0 0 3px #ffffff;
 }
 
 .name {
-  margin: 22px 0 8px;
-  font-size: 2rem;
+  margin: 16px 0 6px;
+  font-size: 1.65rem;
 }
 
 .role,
@@ -64,17 +64,18 @@
 }
 
 .role {
-  font-size: 1.15rem;
+  font-size: 1rem;
 }
 
 .email {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 
 .bio {
   max-width: 420px;
-  margin: 14px auto 0;
-  line-height: 1.6;
+  margin: 10px auto 0;
+  line-height: 1.5;
+  font-size: 0.95rem;
 }
 
 .resourcesSection {
@@ -82,26 +83,26 @@
 }
 
 .sectionTitle {
-  margin: 0 0 18px;
+  margin: 0 0 14px;
   text-align: center;
-  font-size: 1.9rem;
+  font-size: 1.58rem;
 }
 
 .resourceGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: 12px;
 }
 
 .resourceCard {
-  min-height: 64px;
-  padding: 0 22px;
+  min-height: 54px;
+  padding: 0 18px;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 12px;
   background: #ffffff;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   font-weight: 700;
   box-shadow: var(--shadow-sm);
 }

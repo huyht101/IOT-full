@@ -28,13 +28,13 @@
   --warning: #f59e0b;
   --warning-soft: rgba(245, 158, 11, 0.14);
   --light-accent: #f2ac2e;
-  --shadow-lg: 0 26px 48px rgba(25, 35, 67, 0.09);
-  --shadow-md: 0 14px 32px rgba(32, 44, 75, 0.08);
-  --shadow-sm: 0 10px 24px rgba(57, 77, 118, 0.06);
-  --radius-xl: 28px;
-  --radius-lg: 22px;
-  --radius-md: 16px;
-  --radius-sm: 12px;
+  --shadow-lg: 0 14px 28px rgba(25, 35, 67, 0.05);
+  --shadow-md: 0 12px 28px rgba(32, 44, 75, 0.075);
+  --shadow-sm: 0 8px 20px rgba(57, 77, 118, 0.055);
+  --radius-xl: 18px;
+  --radius-lg: 16px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
 }
 
 * {
@@ -44,12 +44,13 @@
 html,
 body,
 #root {
+  height: 100%;
   min-height: 100%;
 }
 
 body {
   margin: 0;
-  min-width: 1180px;
+  min-width: 1080px;
   background: var(--app-bg);
   color: var(--text);
 }

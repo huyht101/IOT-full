@@ -1,5 +1,5 @@
 .sidebar {
-  padding: 26px 18px;
+  padding: 16px 12px;
   border-right: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.85);
 }
@@ -7,17 +7,18 @@
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 }
 
 .link {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  border-radius: 12px;
+  gap: 11px;
+  padding: 11px 12px;
+  border-radius: 10px;
   color: var(--text);
   font-weight: 500;
+  font-size: 0.95rem;
   transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 

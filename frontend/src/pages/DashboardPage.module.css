@@ -1,11 +1,11 @@
 .page {
   display: grid;
-  gap: 30px;
+  gap: 16px;
 }
 
 .notice {
-  padding: 14px 18px;
-  border-radius: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
   border: 1px solid transparent;
   font-weight: 600;
 }
@@ -31,11 +31,11 @@
 .metricsGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 22px;
+  gap: 14px;
 }
 
 .grid {
   display: grid;
   grid-template-columns: 1.06fr 1fr;
-  gap: 28px;
+  gap: 16px;
 }
