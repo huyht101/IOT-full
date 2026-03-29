@@ -1,8 +1,16 @@
 import styles from './SensorMetricCard.module.css';
 
-function SensorMetricCard({ title, value, unit, subtitle, accent = 'indigo', icon: Icon }) {
+function SensorMetricCard({
+  title,
+  value,
+  unit,
+  subtitle,
+  tone = 'neutral',
+  statusLabel,
+  icon: Icon,
+}) {
   return (
-    <article className={`${styles.card} ${styles[accent]}`}>
+    <article className={`${styles.card} ${styles[tone]}`}>
       <div className={styles.header}>
         <div>
           <p className={styles.title}>{title}</p>
@@ -18,6 +26,7 @@ function SensorMetricCard({ title, value, unit, subtitle, accent = 'indigo', ico
         <span className={styles.value}>{value}</span>
         {unit ? <span className={styles.unit}>{unit}</span> : null}
       </div>
+      {statusLabel ? <div className={styles.statusPill}>{statusLabel}</div> : null}
     </article>
   );
 }

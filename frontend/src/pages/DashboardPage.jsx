@@ -16,12 +16,13 @@ import {
   formatMetricValue,
   getSensorCardLabel,
 } from '../utils/format';
+import { getSensorTone } from '../utils/sensorTone';
 import styles from './DashboardPage.module.css';
 
 const sensorDisplayConfig = [
-  { code: 'TEMP', accent: 'indigo', icon: Thermometer },
-  { code: 'HUM', accent: 'green', icon: Droplets },
-  { code: 'LIGHT', accent: 'amber', icon: SunMedium },
+  { code: 'TEMP', icon: Thermometer },
+  { code: 'HUM', icon: Droplets },
+  { code: 'LIGHT', icon: SunMedium },
 ];
 
 function DashboardPage() {
@@ -113,11 +114,13 @@ function DashboardPage() {
       <section className={styles.metricsGrid}>
         {sensorDisplayConfig.map((sensorConfig) => {
           const sensor = sensorMap[sensorConfig.code];
+          const tone = getSensorTone(sensor || { sensor_code: sensorConfig.code });
 
           return (
             <SensorMetricCard
               key={sensorConfig.code}
-              accent={sensorConfig.accent}
+              tone={tone.theme}
+              statusLabel={tone.statusLabel}
               icon={sensorConfig.icon}
               title={getSensorCardLabel(sensor || { sensor_code: sensorConfig.code })}
               value={formatMetricValue(sensor?.value_num, sensorConfig.code)}
