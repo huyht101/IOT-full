@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchActionHistory } from '../api/actions';
 import Badge from '../components/common/Badge';
 import EmptyState from '../components/common/EmptyState';
@@ -20,6 +20,8 @@ import {
   formatStatusLabel,
 } from '../utils/format';
 import styles from './ActionHistoryPage.module.css';
+
+const ACTION_HISTORY_POLL_INTERVAL_MS = 5000;
 
 function getActionTone(action) {
   return action === 'off' ? 'danger' : 'success';
@@ -48,61 +50,116 @@ function ActionHistoryPage() {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const debouncedQuery = useDebouncedValue(query, 400);
+  const requestInFlightRef = useRef(false);
+  const queuedRefreshRef = useRef(false);
+  const mountedRef = useRef(true);
+  const latestParamsRef = useRef({
+    page: 1,
+    pageSize: 5,
+    q: '',
+    deviceCode: '',
+    actionFilter: '',
+    statusFilter: '',
+  });
 
   useEffect(() => {
-    document.title = 'IoT Dashboard | Action History';
+    latestParamsRef.current = {
+      page,
+      pageSize,
+      q: debouncedQuery,
+      deviceCode,
+      actionFilter,
+      statusFilter,
+    };
+  }, [page, pageSize, debouncedQuery, deviceCode, actionFilter, statusFilter]);
+
+  const loadActions = useCallback(async (options = {}) => {
+    const background = Boolean(options.background);
+
+    if (requestInFlightRef.current) {
+      queuedRefreshRef.current = true;
+      return;
+    }
+
+    requestInFlightRef.current = true;
+
+    if (!background) {
+      setLoading(true);
+      setError('');
+    }
+
+    const currentParams = latestParamsRef.current;
+
+    try {
+      const response = await fetchActionHistory({
+        page: currentParams.page,
+        page_size: currentParams.pageSize,
+        q: currentParams.q,
+        device_code: currentParams.deviceCode,
+        action: currentParams.actionFilter,
+        status: currentParams.statusFilter,
+        sort_by: 'requested_at',
+        sort_dir: 'desc',
+      });
+
+      if (!mountedRef.current) {
+        return;
+      }
+
+      setItems(response.data?.items || []);
+      setMeta(response.meta);
+      setError('');
+    } catch (requestError) {
+      if (!mountedRef.current) {
+        return;
+      }
+
+      setError(requestError.message);
+    } finally {
+      if (mountedRef.current && !background) {
+        setLoading(false);
+      }
+
+      requestInFlightRef.current = false;
+
+      if (queuedRefreshRef.current && mountedRef.current) {
+        queuedRefreshRef.current = false;
+        void loadActions({ background: true });
+      }
+    }
   }, []);
 
   useEffect(() => {
-    let active = true;
-
-    async function loadActions() {
-      setLoading(true);
-      setError('');
-
-      try {
-        const response = await fetchActionHistory({
-          page,
-          page_size: pageSize,
-          q: debouncedQuery,
-          device_code: deviceCode,
-          action: actionFilter,
-          status: statusFilter,
-          sort_by: 'requested_at',
-          sort_dir: 'desc',
-        });
-
-        if (!active) {
-          return;
-        }
-
-        setItems(response.data?.items || []);
-        setMeta(response.meta);
-      } catch (requestError) {
-        if (!active) {
-          return;
-        }
-
-        setError(requestError.message);
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadActions();
+    document.title = 'IoT Dashboard | Action History';
+    mountedRef.current = true;
 
     return () => {
-      active = false;
+      mountedRef.current = false;
     };
-  }, [page, pageSize, debouncedQuery, deviceCode, actionFilter, statusFilter, refreshKey]);
+  }, []);
+
+  useEffect(() => {
+    void loadActions();
+  }, [loadActions, page, pageSize, debouncedQuery, deviceCode, actionFilter, statusFilter]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (document.hidden) {
+        return;
+      }
+
+      void loadActions({ background: true });
+    }, ACTION_HISTORY_POLL_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [loadActions]);
 
   const retryLoad = () => {
-    setRefreshKey((value) => value + 1);
+    void loadActions();
   };
 
   if (loading && !items.length) {

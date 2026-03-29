@@ -1,5 +1,5 @@
 import { Lightbulb, Power, Zap } from 'lucide-react';
-import { getRuleDescription, RULE_OPTIONS_BY_DEVICE } from '../../automation/rules';
+import { getRuleDescription, RULE_OPTIONS } from '../../automation/rules';
 import { formatDeviceName } from '../../utils/format';
 import SelectField from '../common/SelectField';
 import ToggleSwitch from '../common/ToggleSwitch';
@@ -67,7 +67,7 @@ function DeviceAutomationCard({
                 <SelectField
                   ariaLabel={`Automation rule for ${formatDeviceName(device)}`}
                   value={selectedRule}
-                  options={RULE_OPTIONS_BY_DEVICE[device.device_code] || [{ label: 'None', value: 'none' }]}
+                  options={RULE_OPTIONS}
                   onChange={(value) => onRuleChange(device.device_code, value)}
                 />
                 <p className={styles.ruleHint}>{getRuleDescription(selectedRule)}</p>

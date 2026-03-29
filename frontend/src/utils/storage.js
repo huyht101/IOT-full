@@ -1,4 +1,4 @@
-import { DEFAULT_RULE_SELECTIONS, RULE_OPTIONS_BY_DEVICE } from '../automation/rules';
+import { DEFAULT_RULE_SELECTIONS, RULE_OPTIONS } from '../automation/rules';
 
 const STORAGE_KEY = 'iot-dashboard-automation-rules';
 
@@ -8,13 +8,13 @@ function isStorageAvailable() {
 
 function sanitizeSelections(rawValue) {
   const nextSelections = { ...DEFAULT_RULE_SELECTIONS };
+  const allowedValues = RULE_OPTIONS.map((option) => option.value);
 
   if (!rawValue || typeof rawValue !== 'object') {
     return nextSelections;
   }
 
-  Object.entries(RULE_OPTIONS_BY_DEVICE).forEach(([deviceCode, options]) => {
-    const allowedValues = options.map((option) => option.value);
+  Object.keys(DEFAULT_RULE_SELECTIONS).forEach((deviceCode) => {
     const value = rawValue[deviceCode];
 
     nextSelections[deviceCode] = allowedValues.includes(value) ? value : DEFAULT_RULE_SELECTIONS[deviceCode];

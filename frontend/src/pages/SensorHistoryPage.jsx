@@ -1,5 +1,5 @@
 import { ArrowDownUp, Droplets, Search, SunMedium, Thermometer } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchSensorHistory } from '../api/sensors';
 import EmptyState from '../components/common/EmptyState';
 import ErrorState from '../components/common/ErrorState';
@@ -22,6 +22,8 @@ const iconMap = {
   LIGHT: SunMedium,
 };
 
+const SENSOR_HISTORY_POLL_INTERVAL_MS = 5000;
+
 function SensorHistoryPage() {
   const [query, setQuery] = useState('');
   const [sortDir, setSortDir] = useState('desc');
@@ -31,58 +33,109 @@ function SensorHistoryPage() {
   const [meta, setMeta] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [refreshKey, setRefreshKey] = useState(0);
 
   const debouncedQuery = useDebouncedValue(query, 400);
+  const requestInFlightRef = useRef(false);
+  const queuedRefreshRef = useRef(false);
+  const mountedRef = useRef(true);
+  const latestParamsRef = useRef({
+    page: 1,
+    pageSize: 5,
+    q: '',
+    sortDir: 'desc',
+  });
 
   useEffect(() => {
-    document.title = 'IoT Dashboard | Sensor History';
+    latestParamsRef.current = {
+      page,
+      pageSize,
+      q: debouncedQuery,
+      sortDir,
+    };
+  }, [page, pageSize, debouncedQuery, sortDir]);
+
+  const loadSensors = useCallback(async (options = {}) => {
+    const background = Boolean(options.background);
+
+    if (requestInFlightRef.current) {
+      queuedRefreshRef.current = true;
+      return;
+    }
+
+    requestInFlightRef.current = true;
+
+    if (!background) {
+      setLoading(true);
+      setError('');
+    }
+
+    const currentParams = latestParamsRef.current;
+
+    try {
+      const response = await fetchSensorHistory({
+        page: currentParams.page,
+        page_size: currentParams.pageSize,
+        q: currentParams.q,
+        sort_by: 'reading_id',
+        sort_dir: currentParams.sortDir,
+      });
+
+      if (!mountedRef.current) {
+        return;
+      }
+
+      setItems(response.data?.items || []);
+      setMeta(response.meta);
+      setError('');
+    } catch (requestError) {
+      if (!mountedRef.current) {
+        return;
+      }
+
+      setError(requestError.message);
+    } finally {
+      if (mountedRef.current && !background) {
+        setLoading(false);
+      }
+
+      requestInFlightRef.current = false;
+
+      if (queuedRefreshRef.current && mountedRef.current) {
+        queuedRefreshRef.current = false;
+        void loadSensors({ background: true });
+      }
+    }
   }, []);
 
   useEffect(() => {
-    let active = true;
-
-    async function loadSensors() {
-      setLoading(true);
-      setError('');
-
-      try {
-        const response = await fetchSensorHistory({
-          page,
-          page_size: pageSize,
-          q: debouncedQuery,
-          sort_by: 'reading_id',
-          sort_dir: sortDir,
-        });
-
-        if (!active) {
-          return;
-        }
-
-        setItems(response.data?.items || []);
-        setMeta(response.meta);
-      } catch (requestError) {
-        if (!active) {
-          return;
-        }
-
-        setError(requestError.message);
-      } finally {
-        if (active) {
-          setLoading(false);
-        }
-      }
-    }
-
-    loadSensors();
+    document.title = 'IoT Dashboard | Sensor History';
+    mountedRef.current = true;
 
     return () => {
-      active = false;
+      mountedRef.current = false;
     };
-  }, [page, pageSize, debouncedQuery, sortDir, refreshKey]);
+  }, []);
+
+  useEffect(() => {
+    void loadSensors();
+  }, [loadSensors, page, pageSize, debouncedQuery, sortDir]);
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (document.hidden) {
+        return;
+      }
+
+      void loadSensors({ background: true });
+    }, SENSOR_HISTORY_POLL_INTERVAL_MS);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [loadSensors]);
 
   const retryLoad = () => {
-    setRefreshKey((value) => value + 1);
+    void loadSensors();
   };
 
   if (loading && !items.length) {

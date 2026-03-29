@@ -3,9 +3,8 @@ export const AUTOMATION_NONE = 'none';
 export const RULE_DEFINITIONS = {
   rule1: {
     id: 'rule1',
-    deviceCode: 'LED1',
     label: 'Rule 1',
-    description: 'If temperature is above 30 then LED 1 turns on, otherwise it turns off.',
+    description: 'If temperature is above 30 then the device turns on, otherwise it turns off.',
     evaluate(sensorLookup) {
       const temp = sensorLookup.TEMP?.value_num;
       if (temp === null || temp === undefined) {
@@ -17,9 +16,8 @@ export const RULE_DEFINITIONS = {
   },
   rule2: {
     id: 'rule2',
-    deviceCode: 'LED2',
     label: 'Rule 2',
-    description: 'If light is below 1000 then LED 2 turns on, otherwise it turns off.',
+    description: 'If light is below 1000 then the device turns on, otherwise it turns off.',
     evaluate(sensorLookup) {
       const light = sensorLookup.LIGHT?.value_num;
       if (light === null || light === undefined) {
@@ -31,9 +29,8 @@ export const RULE_DEFINITIONS = {
   },
   rule3: {
     id: 'rule3',
-    deviceCode: 'LED3',
     label: 'Rule 3',
-    description: 'If humidity is above 80 then LED 3 turns off, otherwise it turns on.',
+    description: 'If humidity is above 80 then the device turns off, otherwise it turns on.',
     evaluate(sensorLookup) {
       const hum = sensorLookup.HUM?.value_num;
       if (hum === null || hum === undefined) {
@@ -45,20 +42,18 @@ export const RULE_DEFINITIONS = {
   },
 };
 
-export const RULE_OPTIONS_BY_DEVICE = {
-  LED1: [
-    { label: 'None', value: AUTOMATION_NONE },
-    { label: 'Rule 1', value: 'rule1' },
-  ],
-  LED2: [
-    { label: 'None', value: AUTOMATION_NONE },
-    { label: 'Rule 2', value: 'rule2' },
-  ],
-  LED3: [
-    { label: 'None', value: AUTOMATION_NONE },
-    { label: 'Rule 3', value: 'rule3' },
-  ],
-};
+export const RULE_OPTIONS = Object.freeze([
+  { label: 'None', value: AUTOMATION_NONE },
+  { label: 'Rule 1', value: 'rule1' },
+  { label: 'Rule 2', value: 'rule2' },
+  { label: 'Rule 3', value: 'rule3' },
+]);
+
+export const RULE_OPTIONS_BY_DEVICE = Object.freeze({
+  LED1: RULE_OPTIONS,
+  LED2: RULE_OPTIONS,
+  LED3: RULE_OPTIONS,
+});
 
 export const DEFAULT_RULE_SELECTIONS = {
   LED1: AUTOMATION_NONE,
@@ -82,7 +77,7 @@ export function evaluateRuleForDevice(deviceCode, selectedRule, sensors) {
   }
 
   const definition = RULE_DEFINITIONS[selectedRule];
-  if (!definition || definition.deviceCode !== deviceCode) {
+  if (!definition) {
     return null;
   }
 
