@@ -1,35 +1,72 @@
-# IoT Demo Backend MVP
+# IoT Dashboard MVP
 
-Node.js + Express + MySQL + MQTT backend for the locked IoT demo MVP.
+Full-stack IoT demo system for monitoring environmental telemetry, controlling devices, and reviewing action/sensor history.
 
-## Current MVP assumptions
+This repository contains:
+- a Node.js + Express backend
+- a React + Vite frontend
+- MySQL schema/init scripts
+- MQTT integration for ESP32 telemetry and ACK-driven device control
 
-- Exactly 1 ESP32 board is in scope.
-- Current board publishes 3 sensors: `TEMP`, `HUM`, `LIGHT`.
-- Current board controls 3 devices: `LED1`, `LED2`, `LED3`.
-- No auth.
-- Dashboard updates by HTTP polling every 2 seconds.
-- MQTT telemetry is a full device snapshot every 2 seconds.
-- MQTT ACK is per-device and keyed by `action_id`.
-- Server time is the canonical timestamp source for all DB timestamps.
+## 1. Overview
 
-## Tech stack
+The current MVP supports one ESP32 board that publishes:
+- sensors: `TEMP`, `HUM`, `LIGHT`
+- devices: `LED1`, `LED2`, `LED3`
 
-- Node.js with CommonJS
-- Express
-- mysql2/promise
-- mqtt.js
-- dotenv
-- cors
-- morgan
-- nodemon
+The system flow is:
+- ESP32 publishes telemetry to Mosquitto
+- backend ingests telemetry and stores canonical state in MySQL
+- frontend polls backend APIs for dashboard and history views
+- manual device toggles and frontend-only automation use the same backend toggle API
 
-## Project structure
+## 2. Main Features
+
+- Polling-based realtime dashboard
+- Manual device toggle with MQTT ACK handling
+- Action History with search, filters, pagination, and auto refresh while open
+- Sensor History with search across displayed fields, pagination, ID-based sort, and auto refresh while open
+- Frontend-only automation rules stored in `localStorage`
+- MQTT telemetry ingest with full device snapshot validation
+
+## 3. System Architecture
+
+High-level flow:
+- ESP32 -> MQTT Broker -> Express backend -> MySQL
+- React frontend -> HTTP APIs -> Express backend
+
+Important current runtime behavior:
+- Dashboard uses HTTP polling every 2 seconds
+- Action History auto-refreshes every 5 seconds while its page is open
+- Sensor History auto-refreshes every 5 seconds while its page is open
+- Automation is frontend-only and runs globally while the SPA is open
+- Backend assigns canonical DB timestamps; telemetry `ts_ms` is debug/order only
+
+## 4. Technologies Used
+
+- Frontend: React 18, Vite, React Router, Recharts, CSS Modules
+- Backend: Node.js, Express, mysql2/promise, mqtt.js
+- Database: MySQL 8.x
+- Broker: Mosquitto
+- Hardware: ESP32
+
+## 5. Project Structure
 
 ```text
 .
 |-- docs/
+|   |-- api/
+|   |   |-- API.md
+|   |   `-- openapi.yaml
+|   |-- postman/
+|   |   |-- IOT_Local.postman_environment.json
+|   |   `-- IOT_MVP.postman_collection.json
 |   `-- backend-mvp-integration-checklist-windows.md
+|-- frontend/
+|   |-- src/
+|   |-- .env.example
+|   |-- package.json
+|   `-- README.md
 |-- SQL/
 |   `-- init.sql
 |-- src/
@@ -50,143 +87,249 @@ Node.js + Express + MySQL + MQTT backend for the locked IoT demo MVP.
     `-- check-syntax.js
 ```
 
-## Setup
+## 6. Environment Variables
 
-1. Install dependencies:
+### Backend (`.env`)
 
-```bash
-npm install
-```
-
-`node_modules` is local-only and should not be committed. After cloning or pulling the repo, run `npm install` to restore dependencies locally.
-
-2. Create `.env` from `.env.example`:
+Copy the backend template first:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-`.env` is a local-only file and is ignored by git.
-
-3. Initialize MySQL:
-
-```powershell
-Get-Content .\SQL\init.sql | mysql -u root -p
-```
-
-4. Start the backend in development mode:
-
-```bash
-npm run dev
-```
-
-5. Start in normal mode:
-
-```bash
-npm start
-```
-
-6. Run the syntax check across the whole `src/` tree:
-
-```bash
-npm run check
-```
-
-## Manual integration checklist
-
-For a full Windows step-by-step backend verification flow, including exact MQTT payloads, API requests, DB checks, and expected logs, use:
-
-- `docs/backend-mvp-integration-checklist-windows.md`
-
-## Environment variables
+Current backend variables:
 
 | Variable | Purpose |
 | --- | --- |
-| `PORT` | HTTP server port |
+| `PORT` | Express HTTP port |
 | `DB_HOST` | MySQL host |
 | `DB_PORT` | MySQL port |
 | `DB_NAME` | MySQL schema name |
 | `DB_USER` | MySQL user |
 | `DB_PASSWORD` | MySQL password |
-| `MQTT_URL` | Broker connection URL |
+| `MQTT_URL` | Broker URL used by mqtt.js |
 | `MQTT_TOPIC_TELEMETRY` | Telemetry subscribe topic |
-| `MQTT_TOPIC_CMD` | Command publish topic |
+| `MQTT_TOPIC_CMD` | Device command publish topic |
 | `MQTT_TOPIC_ACK` | ACK subscribe topic |
 | `ACK_TIMEOUT_MS` | Toggle ACK timeout in milliseconds |
-| `TZ` | Node.js timezone. Use `UTC` for consistent timestamps |
+| `TZ` | Node timezone for consistent backend timestamps; current template uses `UTC` |
 
-## MQTT startup behavior
+### Frontend (`frontend/.env`)
 
-- The MQTT client is created during server startup.
-- The subscriber listens to:
-  - `MQTT_TOPIC_TELEMETRY`
-  - `MQTT_TOPIC_ACK`
-- Telemetry messages are parsed safely and ingested in one DB transaction.
-- ACK messages resolve the in-memory pending action map and update DB state.
+Copy the frontend template:
 
-## API endpoints
+```powershell
+Copy-Item frontend\.env.example frontend\.env
+```
 
+Current frontend variable:
+
+| Variable | Purpose |
+| --- | --- |
+| `VITE_API_BASE_URL` | Base URL for the backend API; default `http://127.0.0.1:4000` |
+
+## 7. Local Setup / Run Guide
+
+### 7.1 Start Mosquitto
+
+The backend expects a broker at:
+
+```text
+mqtt://127.0.0.1:1884
+```
+
+You can use any Mosquitto setup that listens on that host/port, or adjust `MQTT_URL` in `.env`.
+
+### 7.2 Initialize MySQL
+
+The canonical schema/init file is:
+
+- [SQL/init.sql](SQL/init.sql)
+
+Apply it with the MySQL CLI:
+
+```powershell
+Get-Content .\SQL\init.sql | mysql -u root -p
+```
+
+Notes:
+- the script drops and recreates `iot_demo`
+- it seeds the three devices and three sensors
+- it seeds `device_state`
+- `sensor_state` is intentionally empty until first valid telemetry
+
+### 7.3 Run Backend
+
+Install backend dependencies:
+
+```bash
+npm install
+```
+
+Start the backend in development mode:
+
+```bash
+npm run dev
+```
+
+Start in normal mode:
+
+```bash
+npm start
+```
+
+Syntax check:
+
+```bash
+npm run check
+```
+
+### 7.4 Run Frontend
+
+Install frontend dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+Start the Vite dev server:
+
+```bash
+npm run dev
+```
+
+Build the frontend:
+
+```bash
+npm run build
+```
+
+Preview the production build:
+
+```bash
+npm run preview
+```
+
+## 8. MQTT Topics / Payload Summary
+
+Current topics from `.env.example`:
+
+- telemetry: `iot/demo/esp32_01/telemetry`
+- command: `iot/demo/esp32_01/cmd`
+- ack: `iot/demo/esp32_01/ack`
+
+### Telemetry payload
+
+Expected high-level shape:
+
+```json
+{
+  "ts_ms": 1711711800000,
+  "temp": 28.4,
+  "hum": 71.2,
+  "light": 1830,
+  "devices": [
+    { "code": "LED1", "state": 1 },
+    { "code": "LED2", "state": 0 },
+    { "code": "LED3", "state": 1 }
+  ]
+}
+```
+
+Notes:
+- `devices[]` must be the full active device snapshot
+- `temp` and `hum` may be `null`
+- `light` must be numeric
+- backend uses server time for DB timestamps
+- `ts_ms` is not used as the canonical DB timestamp
+
+### Command payload
+
+Published by backend to the command topic:
+
+```json
+{
+  "action_id": 123,
+  "device_code": "LED1",
+  "action": "on"
+}
+```
+
+### ACK payload
+
+Published by ESP32 to the ACK topic:
+
+```json
+{
+  "action_id": 123,
+  "success": true
+}
+```
+
+## 9. API Summary
+
+Current core backend endpoints:
 - `GET /api/v1/dashboard`
-- `GET /api/v1/dashboard/realtime?since=ISO_DATETIME`
+- `GET /api/v1/dashboard/realtime?since=...`
 - `POST /api/v1/devices/:device_id/toggle`
 - `GET /api/v1/actions`
 - `GET /api/v1/sensor-readings`
 
-For `GET /api/v1/dashboard/realtime`, `since` should come from the backend timestamp returned by the dashboard APIs. Future values are rejected.
+Detailed API documentation:
+- [docs/api/API.md](docs/api/API.md)
 
-All responses use the same wrapper:
+Postman artifacts:
+- [docs/postman/IOT_MVP.postman_collection.json](docs/postman/IOT_MVP.postman_collection.json)
+- [docs/postman/IOT_Local.postman_environment.json](docs/postman/IOT_Local.postman_environment.json)
 
-```json
-{
-  "ok": true,
-  "data": {}
-}
-```
+OpenAPI file:
+- [docs/api/openapi.yaml](docs/api/openapi.yaml)
 
-or
+## 10. Frontend-Only Automation Note
 
-```json
-{
-  "ok": false,
-  "error": {
-    "code": "SOME_CODE",
-    "message": "Some message"
-  }
-}
-```
+Automation currently runs in the frontend only.
 
-## Extension points
+Current behavior:
+- rule selections are stored in `localStorage`
+- the automation runner lives at app level, not only on Dashboard
+- rules keep evaluating while the SPA is open
+- rules stop when the browser tab/app is closed
+- backend does not persist automation rules
+- backend does not distinguish manual vs automation action source
 
-- Current device and sensor definitions are centralized in `src/constants/index.js`.
-- Runtime device and sensor lookups are loaded from DB where practical.
-- Current telemetry parsing lives in `src/services/telemetry.service.js`.
-- Reusable device command execution lives in `src/services/deviceCommand.service.js`.
-- A future automation module can call the same command execution service used by the toggle endpoint.
+Current generic rules:
+- Rule 1: if temperature > 30 -> ON, else OFF
+- Rule 2: if light < 1000 -> ON, else OFF
+- Rule 3: if humidity > 80 -> OFF, else ON
 
-## Where to change things later
+## 11. Known Limitations
 
-- Add future MVP devices:
-  - Update seed data in `SQL/init.sql`
-  - Update centralized demo constants in `src/constants/index.js`
-  - If telemetry payload shape changes, extend `src/services/telemetry.service.js`
+- Single-board MVP assumptions are hardcoded through current seed/config expectations
+- Automation is frontend-only for this phase
+- Dashboard/history updates use polling, not WebSocket/SSE
+- Pending ACK tracking is in-memory in the backend process
+- Local demo runs assume a reachable Mosquitto broker and one active browser session for frontend automation
 
-- Add future MVP sensors:
-  - Update seed data in `SQL/init.sql`
-  - Update centralized demo constants in `src/constants/index.js`
-  - Extend the telemetry parser and dashboard chart pivot query
+## 12. Future Improvements
 
-- Add future automation:
-  - Reuse `src/services/deviceCommand.service.js`
-  - Do not duplicate MQTT publish, ACK, and DB action logic elsewhere
+- Move automation from frontend-only to backend-managed rules
+- Track action source (manual vs automation)
+- Add stronger deployment/runtime config for multi-instance backends
+- Add richer dashboards and reporting
+- Add authentication and access control if the project scope expands
 
-## Current limitations to note
+## 13. Demo / Testing Notes
 
-- The current `actions` table does not record whether the action source was manual UI or future automation.
-- Pending ACK tracking is in-memory for this single-process MVP. A multi-instance deployment would need shared coordination.
-- Current telemetry parsing is intentionally locked to the MVP payload shape with `temp`, `hum`, `light`, and a full `devices[]` snapshot.
+Suggested quick demo flow:
+1. Start Mosquitto and MySQL
+2. Initialize DB with `SQL/init.sql`
+3. Run backend and frontend
+4. Open Dashboard and confirm live sensor/device state
+5. Send telemetry and observe dashboard updates
+6. Toggle a device and observe Action History update
+7. Open Sensor History and verify auto refresh plus search behavior
+8. Demonstrate a frontend-only automation rule while staying on a non-Dashboard page
 
-## Minor assumptions used here
-
-- `device_type` and `sensor_type` are stored as `VARCHAR` in MySQL for easier future extension, while validation is enforced in application code.
-- `POST /api/v1/devices/:device_id/toggle` returns a success payload only on ACK success. Publish failure, ACK failure, and timeout return a wrapped error with the failed action data.
-- The canonical initialization script for this backend is `SQL/init.sql`.
+Detailed Windows integration checklist:
+- [docs/backend-mvp-integration-checklist-windows.md](docs/backend-mvp-integration-checklist-windows.md)

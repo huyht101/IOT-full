@@ -1,0 +1,305 @@
+{
+  "info": {
+    "_postman_id": "7f7a6972-26ef-4fb1-b5c2-0a9f0915f2b8",
+    "name": "IoT Dashboard MVP",
+    "description": "Postman collection for the current IoT Dashboard MVP backend APIs.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:4000"
+    },
+    {
+      "key": "since",
+      "value": "2026-03-29T12:30:00.000Z"
+    },
+    {
+      "key": "deviceId",
+      "value": "1"
+    },
+    {
+      "key": "page",
+      "value": "1"
+    },
+    {
+      "key": "pageSize",
+      "value": "10"
+    }
+  ],
+  "item": [
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Load the current dashboard snapshot, including current device state, sensor state, chart points, and last_ts.",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Dashboard Realtime",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Poll dashboard deltas using the previous dashboard last_ts value.",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/dashboard/realtime?since={{since}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "dashboard",
+                "realtime"
+              ],
+              "query": [
+                {
+                  "key": "since",
+                  "value": "{{since}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Devices",
+      "item": [
+        {
+          "name": "Toggle Device",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "description": "Send a manual on/off command to a device and wait for publish plus ACK finalization.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"on\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices/{{deviceId}}/toggle",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "devices",
+                "{{deviceId}}",
+                "toggle"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "History",
+      "item": [
+        {
+          "name": "Get Action History (Basic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Basic paginated action history request using the current default sort semantics.",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/actions?page={{page}}&page_size={{pageSize}}&sort_by=requested_at&sort_dir=desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "actions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "page_size",
+                  "value": "{{pageSize}}"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "requested_at"
+                },
+                {
+                  "key": "sort_dir",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Action History (Search and Filter Example)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Example showing action history q search plus device, action, and status filtering.",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/actions?page=1&page_size=10&q=2026-03-29%2019&device_code=LED1&action=on&status=SUCCESS&sort_by=requested_at&sort_dir=desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "actions"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                },
+                {
+                  "key": "q",
+                  "value": "2026-03-29 19"
+                },
+                {
+                  "key": "device_code",
+                  "value": "LED1"
+                },
+                {
+                  "key": "action",
+                  "value": "on"
+                },
+                {
+                  "key": "status",
+                  "value": "SUCCESS"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "requested_at"
+                },
+                {
+                  "key": "sort_dir",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sensor History (Basic)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Basic paginated sensor history request using the current default sort semantics.",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensor-readings?page={{page}}&page_size={{pageSize}}&sort_by=reading_id&sort_dir=desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sensor-readings"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "{{page}}"
+                },
+                {
+                  "key": "page_size",
+                  "value": "{{pageSize}}"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "reading_id"
+                },
+                {
+                  "key": "sort_dir",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sensor History (Search and Filter Example)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "Example showing sensor history q search plus sensor code and sensor type filtering.",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensor-readings?page=1&page_size=10&q=2026-03-29%2019%3A30&sensor_code=TEMP&sensor_type=temperature&sort_by=reading_id&sort_dir=desc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "sensor-readings"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "10"
+                },
+                {
+                  "key": "q",
+                  "value": "2026-03-29 19:30"
+                },
+                {
+                  "key": "sensor_code",
+                  "value": "TEMP"
+                },
+                {
+                  "key": "sensor_type",
+                  "value": "temperature"
+                },
+                {
+                  "key": "sort_by",
+                  "value": "reading_id"
+                },
+                {
+                  "key": "sort_dir",
+                  "value": "desc"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

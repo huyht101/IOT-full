@@ -1,0 +1,505 @@
+openapi: 3.0.3
+info:
+  title: IoT Dashboard MVP API
+  version: 1.0.0
+  description: >
+    Lightweight OpenAPI description for the current IoT Dashboard MVP backend.
+    This file reflects the five core HTTP endpoints implemented in the codebase.
+servers:
+  - url: http://127.0.0.1:4000
+paths:
+  /api/v1/dashboard:
+    get:
+      summary: Get dashboard snapshot
+      tags: [Dashboard]
+      responses:
+        '200':
+          description: Dashboard snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+  /api/v1/dashboard/realtime:
+    get:
+      summary: Get dashboard delta update
+      tags: [Dashboard]
+      parameters:
+        - in: query
+          name: since
+          required: true
+          schema:
+            type: string
+          description: Valid datetime string. Best sourced from the previous dashboard response.
+      responses:
+        '200':
+          description: Dashboard delta update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardRealtimeResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/v1/devices/{device_id}/toggle:
+    post:
+      summary: Toggle device
+      tags: [Devices]
+      parameters:
+        - in: path
+          name: device_id
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [action]
+              properties:
+                action:
+                  type: string
+                  enum: [on, off]
+      responses:
+        '200':
+          description: Toggle succeeded after ACK success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToggleSuccessResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Device not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Device busy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '502':
+          description: ACK reported failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToggleFailureResponse'
+        '503':
+          description: MQTT publish failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToggleFailureResponse'
+        '504':
+          description: ACK timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToggleFailureResponse'
+  /api/v1/actions:
+    get:
+      summary: Query action history
+      tags: [History]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: >
+            Matches displayed requested_at text (fixed UTC+07), device_code,
+            device_name, and numeric action_id/device_id.
+        - in: query
+          name: device_type
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [PENDING, SUCCESS, FAIL]
+        - in: query
+          name: device_code
+          schema:
+            type: string
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [on, off]
+        - in: query
+          name: from
+          schema:
+            type: string
+        - in: query
+          name: to
+          schema:
+            type: string
+        - in: query
+          name: sort_by
+          schema:
+            type: string
+            enum: [requested_at, acked_at, device_code, status, action]
+        - in: query
+          name: sort_dir
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        '200':
+          description: Action history page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionHistoryResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/v1/sensor-readings:
+    get:
+      summary: Query sensor history
+      tags: [History]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: >
+            Matches displayed ts text (fixed UTC+07), reading_id, sensor_code,
+            sensor_name, sensor_type, and value_num text.
+        - in: query
+          name: sensor_type
+          schema:
+            type: string
+            enum: [temperature, humidity, light]
+        - in: query
+          name: sensor_code
+          schema:
+            type: string
+            enum: [TEMP, HUM, LIGHT]
+        - in: query
+          name: from
+          schema:
+            type: string
+        - in: query
+          name: to
+          schema:
+            type: string
+        - in: query
+          name: sort_by
+          schema:
+            type: string
+            enum: [reading_id, ts, sensor_code, sensor_type, value_num]
+        - in: query
+          name: sort_dir
+          schema:
+            type: string
+            enum: [asc, desc]
+      responses:
+        '200':
+          description: Sensor history page
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SensorHistoryResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+components:
+  parameters:
+    Page:
+      in: query
+      name: page
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      in: query
+      name: page_size
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+  schemas:
+    SuccessEnvelope:
+      type: object
+      required: [ok, data]
+      properties:
+        ok:
+          type: boolean
+          enum: [true]
+        data:
+          type: object
+        meta:
+          type: object
+    ErrorEnvelope:
+      type: object
+      required: [ok, error]
+      properties:
+        ok:
+          type: boolean
+          enum: [false]
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+        data:
+          type: object
+          nullable: true
+    DeviceItem:
+      type: object
+      properties:
+        device_id:
+          type: integer
+        device_code:
+          type: string
+        device_name:
+          type: string
+        device_type:
+          type: string
+        state:
+          type: integer
+          nullable: true
+        updated_at:
+          type: string
+          nullable: true
+        last_action_id:
+          type: integer
+          nullable: true
+    SensorItem:
+      type: object
+      properties:
+        sensor_id:
+          type: integer
+        sensor_code:
+          type: string
+        sensor_name:
+          type: string
+        sensor_type:
+          type: string
+        unit:
+          type: string
+        value_num:
+          type: number
+          nullable: true
+        ts:
+          type: string
+          nullable: true
+        updated_at:
+          type: string
+          nullable: true
+    ChartPoint:
+      type: object
+      properties:
+        ts:
+          type: string
+        temp:
+          type: number
+          nullable: true
+        hum:
+          type: number
+          nullable: true
+        light:
+          type: number
+          nullable: true
+    DashboardResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                devices:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceItem'
+                sensors:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SensorItem'
+                chart_pts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChartPoint'
+                last_ts:
+                  type: string
+                  nullable: true
+    DashboardRealtimeResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                devices:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceItem'
+                sensors:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SensorItem'
+                new_pts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChartPoint'
+                new_last_ts:
+                  type: string
+                  nullable: true
+    ToggleActionData:
+      type: object
+      properties:
+        action_id:
+          type: integer
+        device_id:
+          type: integer
+        device_code:
+          type: string
+        action:
+          type: string
+        status:
+          type: string
+        requested_at:
+          type: string
+        acked_at:
+          type: string
+          nullable: true
+    ToggleSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              allOf:
+                - $ref: '#/components/schemas/ToggleActionData'
+                - type: object
+                  properties:
+                    device_state:
+                      type: object
+                      properties:
+                        state:
+                          type: integer
+                        updated_at:
+                          type: string
+                        last_action_id:
+                          type: integer
+    ToggleFailureResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ToggleActionData'
+    ActionHistoryItem:
+      type: object
+      properties:
+        action_id:
+          type: integer
+        device_id:
+          type: integer
+        device_code:
+          type: string
+        device_name:
+          type: string
+        device_type:
+          type: string
+        action:
+          type: string
+        status:
+          type: string
+        requested_at:
+          type: string
+        acked_at:
+          type: string
+          nullable: true
+    SensorHistoryItem:
+      type: object
+      properties:
+        reading_id:
+          type: integer
+        sensor_id:
+          type: integer
+        sensor_code:
+          type: string
+        sensor_type:
+          type: string
+        sensor_name:
+          type: string
+        unit:
+          type: string
+        ts:
+          type: string
+        value_num:
+          type: number
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        page_size:
+          type: integer
+        total_items:
+          type: integer
+        total_pages:
+          type: integer
+        sort_by:
+          type: string
+        sort_dir:
+          type: string
+    ActionHistoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ActionHistoryItem'
+            meta:
+              $ref: '#/components/schemas/PaginationMeta'
+    SensorHistoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SensorHistoryItem'
+            meta:
+              $ref: '#/components/schemas/PaginationMeta'
