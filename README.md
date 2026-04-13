@@ -286,6 +286,9 @@ Postman artifacts:
 OpenAPI file:
 - [docs/api/openapi.yaml](docs/api/openapi.yaml)
 
+Frontend Swagger-style docs route:
+- `/api-docs` when the Vite frontend is running
+
 ## 10. Frontend-Only Automation Note
 
 Automation currently runs in the frontend only.
@@ -333,3 +336,25 @@ Suggested quick demo flow:
 
 Detailed Windows integration checklist:
 - [docs/backend-mvp-integration-checklist-windows.md](docs/backend-mvp-integration-checklist-windows.md)
+
+
+-------------Vị trí sửa-----------------
+- vị trí sửa link ở Profile:
+frontend/src/constants/app.js
+frontend/src/pages/ProfilePage.jsx
+frontend/src/App.jsx
+
+- vị trí sửa rule automation:
+frontend/src/automation/rules.js
+frontend/src/automation/engine.js
+frontend/src/utils/storage.js
+frontend/src/context/DashboardRuntimeContext.jsx
+
+- vị trí mở rộng sensor/device:
+SQL/init.sql
+src/constants/index.js
+src/services/telemetry.service.js
+src/repositories/dashboard.repo.js
+frontend/src/pages/DashboardPage.jsx
+frontend/src/components/dashboard/EnvironmentChartCard.jsx
+các file docs/API liên quan.

@@ -1,0 +1,82 @@
+.page {
+  min-height: 100vh;
+  padding: 20px;
+  background:
+    radial-gradient(circle at top left, rgba(100, 119, 255, 0.12), transparent 28%),
+    linear-gradient(180deg, #f7f9ff 0%, #eef3ff 100%);
+}
+
+.header {
+  max-width: 1440px;
+  margin: 0 auto 16px;
+  padding: 0 4px;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6a6ff2;
+}
+
+.title {
+  margin: 0 0 6px;
+  font-size: clamp(1.6rem, 2.4vw, 2.2rem);
+  font-weight: 800;
+  color: #1f2430;
+}
+
+.subtitle {
+  margin: 0;
+  color: #5d6a86;
+  font-size: 0.98rem;
+}
+
+.docsShell {
+  max-width: 1440px;
+  margin: 0 auto;
+  overflow: hidden;
+  border: 1px solid rgba(140, 154, 190, 0.26);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 20px 45px rgba(35, 54, 108, 0.08);
+}
+
+.docsShell :global(.swagger-ui) {
+  font-family: inherit;
+}
+
+.docsShell :global(.swagger-ui .topbar) {
+  display: none;
+}
+
+.docsShell :global(.swagger-ui .info) {
+  margin: 0;
+  padding: 24px 24px 12px;
+}
+
+.docsShell :global(.swagger-ui .scheme-container) {
+  box-shadow: none;
+  background: #f8faff;
+}
+
+.docsShell :global(.swagger-ui .wrapper) {
+  max-width: none;
+  padding: 0 24px 24px;
+}
+
+@media (max-width: 960px) {
+  .page {
+    padding: 14px;
+  }
+
+  .docsShell :global(.swagger-ui .wrapper) {
+    padding: 0 14px 18px;
+  }
+
+  .docsShell :global(.swagger-ui .info) {
+    padding: 18px 14px 10px;
+  }
+}

@@ -44,35 +44,35 @@ export const SENSOR_TYPE_LABELS = {
 };
 
 export const PROFILE_INFO = {
-  name: 'Huy Tran',
-  role: 'IoT Demo Developer',
-  email: 'demo@iotdashboard.local',
+  name: 'Huy Thai',
+  role: 'Developer',
+  email: 'huyht101@gmail.com',
   bio: 'Building a clean demo UI for real-time IoT monitoring, device control, and automation experiments.',
 };
 
 export const RESOURCE_LINKS = [
   {
     id: 'pdf',
-    label: 'Download PDF Report',
-    href: '#',
+    label: 'Open Doc Report',
+    href: 'https://docs.google.com/document/d/1-e_uKYXlWosN---Pz2-7s1-Fm0nuMzZSmhLp8hTmNh8/edit?usp=sharing',
     variant: 'primary',
   },
   {
     id: 'api',
-    label: 'API Doc (Swagger/Postman)',
-    href: '#',
+    label: 'API Doc (Swagger)',
+    href: '/api-docs',
     variant: 'default',
   },
   {
     id: 'github',
     label: 'GitHub Repository',
-    href: '#',
+    href: 'https://github.com/huyht101/IOT-full',
     variant: 'default',
   },
   {
     id: 'figma',
-    label: 'Figma Design Files',
-    href: '#',
+    label: 'Visily Design Files',
+    href: 'https://app.visily.ai/projects/522f2cce-cabb-4c27-908d-518346f08a5b/boards/2459518',
     variant: 'default',
   },
 ];
