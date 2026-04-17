@@ -7,15 +7,22 @@ export const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 export const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', key: 'dashboard' },
   { to: '/actions', label: 'Action History', key: 'actions' },
+  { to: '/device-usage', label: 'Device Usage', key: 'deviceUsage' },
   { to: '/sensors', label: 'Sensor History', key: 'sensors' },
   { to: '/profile', label: 'Profile', key: 'profile' },
 ];
 
-export const DEVICE_FILTER_OPTIONS = [
-  { label: 'All Devices', value: '' },
+export const DEVICE_OPTIONS = [
   { label: 'LED 1', value: 'LED1' },
   { label: 'LED 2', value: 'LED2' },
   { label: 'LED 3', value: 'LED3' },
+  { label: 'LED 4', value: 'LED4' },
+  { label: 'LED 5', value: 'LED5' },
+];
+
+export const DEVICE_FILTER_OPTIONS = [
+  { label: 'All Devices', value: '' },
+  ...DEVICE_OPTIONS,
 ];
 
 export const ACTION_FILTER_OPTIONS = [
@@ -29,6 +36,24 @@ export const STATUS_FILTER_OPTIONS = [
   { label: 'Waiting', value: 'PENDING' },
   { label: 'Success', value: 'SUCCESS' },
   { label: 'Fail', value: 'FAIL' },
+];
+
+export const DEVICE_USAGE_ACTION_OPTIONS = [
+  { label: 'All Actions', value: 'all' },
+  { label: 'Turn On', value: 'on' },
+  { label: 'Turn Off', value: 'off' },
+];
+
+export const DEVICE_USAGE_STATUS_OPTIONS = [
+  { label: 'All Status', value: 'all' },
+  { label: 'Success', value: 'success' },
+  { label: 'Fail', value: 'fail' },
+];
+
+export const DEVICE_USAGE_BUCKET_OPTIONS = [
+  { label: '1 Hour', value: '1h' },
+  { label: '2 Hours', value: '2h' },
+  { label: '4 Hours', value: '4h' },
 ];
 
 export const SENSOR_CARD_LABELS = {

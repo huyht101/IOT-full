@@ -1,5 +1,6 @@
 import {
   Activity,
+  BarChart3,
   History,
   LayoutDashboard,
   UserRound,
@@ -11,6 +12,7 @@ import styles from './Sidebar.module.css';
 const iconMap = {
   dashboard: LayoutDashboard,
   actions: History,
+  deviceUsage: BarChart3,
   sensors: Activity,
   profile: UserRound,
 };

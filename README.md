@@ -1,6 +1,6 @@
 # IoT Dashboard MVP
 
-Full-stack IoT demo system for monitoring environmental telemetry, controlling devices, and reviewing action/sensor history.
+Full-stack IoT demo system for monitoring environmental telemetry, controlling devices, and reviewing device and sensor activity.
 
 This repository contains:
 - a Node.js + Express backend
@@ -12,12 +12,12 @@ This repository contains:
 
 The current MVP supports one ESP32 board that publishes:
 - sensors: `TEMP`, `HUM`, `LIGHT`
-- devices: `LED1`, `LED2`, `LED3`
+- devices: `LED1`, `LED2`, `LED3`, `LED4`, `LED5`
 
 The system flow is:
 - ESP32 publishes telemetry to Mosquitto
 - backend ingests telemetry and stores canonical state in MySQL
-- frontend polls backend APIs for dashboard and history views
+- frontend polls backend APIs for dashboard and history/statistics views
 - manual device toggles and frontend-only automation use the same backend toggle API
 
 ## 2. Main Features
@@ -25,9 +25,10 @@ The system flow is:
 - Polling-based realtime dashboard
 - Manual device toggle with MQTT ACK handling
 - Action History with search, filters, pagination, and auto refresh while open
+- Device Usage chart with server-side aggregation, filters, and auto refresh while open
 - Sensor History with search across displayed fields, pagination, ID-based sort, and auto refresh while open
 - Frontend-only automation rules stored in `localStorage`
-- MQTT telemetry ingest with full device snapshot validation
+- MQTT telemetry ingest with full active-device snapshot validation
 
 ## 3. System Architecture
 
@@ -38,6 +39,7 @@ High-level flow:
 Important current runtime behavior:
 - Dashboard uses HTTP polling every 2 seconds
 - Action History auto-refreshes every 5 seconds while its page is open
+- Device Usage auto-refreshes every 5 seconds while its page is open
 - Sensor History auto-refreshes every 5 seconds while its page is open
 - Automation is frontend-only and runs globally while the SPA is open
 - Backend assigns canonical DB timestamps; telemetry `ts_ms` is debug/order only
@@ -63,10 +65,11 @@ Important current runtime behavior:
 |   |   `-- IOT_MVP.postman_collection.json
 |   `-- backend-mvp-integration-checklist-windows.md
 |-- frontend/
+|   |-- public/
+|   |   `-- openapi.yaml
 |   |-- src/
 |   |-- .env.example
-|   |-- package.json
-|   `-- README.md
+|   `-- package.json
 |-- SQL/
 |   `-- init.sql
 |-- src/
@@ -154,7 +157,7 @@ Get-Content .\SQL\init.sql | mysql -u root -p
 
 Notes:
 - the script drops and recreates `iot_demo`
-- it seeds the three devices and three sensors
+- it seeds five devices and three sensors
 - it seeds `device_state`
 - `sensor_state` is intentionally empty until first valid telemetry
 
@@ -232,7 +235,9 @@ Expected high-level shape:
   "devices": [
     { "code": "LED1", "state": 1 },
     { "code": "LED2", "state": 0 },
-    { "code": "LED3", "state": 1 }
+    { "code": "LED3", "state": 1 },
+    { "code": "LED4", "state": 0 },
+    { "code": "LED5", "state": 1 }
   ]
 }
 ```
@@ -274,6 +279,7 @@ Current core backend endpoints:
 - `GET /api/v1/dashboard/realtime?since=...`
 - `POST /api/v1/devices/:device_id/toggle`
 - `GET /api/v1/actions`
+- `GET /api/v1/device-usage`
 - `GET /api/v1/sensor-readings`
 
 Detailed API documentation:
@@ -283,8 +289,9 @@ Postman artifacts:
 - [docs/postman/IOT_MVP.postman_collection.json](docs/postman/IOT_MVP.postman_collection.json)
 - [docs/postman/IOT_Local.postman_environment.json](docs/postman/IOT_Local.postman_environment.json)
 
-OpenAPI file:
+OpenAPI files:
 - [docs/api/openapi.yaml](docs/api/openapi.yaml)
+- [frontend/public/openapi.yaml](frontend/public/openapi.yaml)
 
 Frontend Swagger-style docs route:
 - `/api-docs` when the Vite frontend is running
@@ -331,30 +338,9 @@ Suggested quick demo flow:
 4. Open Dashboard and confirm live sensor/device state
 5. Send telemetry and observe dashboard updates
 6. Toggle a device and observe Action History update
-7. Open Sensor History and verify auto refresh plus search behavior
-8. Demonstrate a frontend-only automation rule while staying on a non-Dashboard page
+7. Open Device Usage and verify the chart changes by device, action, status, and bucket
+8. Open Sensor History and verify auto refresh plus search behavior
+9. Demonstrate a frontend-only automation rule while staying on a non-Dashboard page
 
 Detailed Windows integration checklist:
 - [docs/backend-mvp-integration-checklist-windows.md](docs/backend-mvp-integration-checklist-windows.md)
-
-
--------------Vị trí sửa-----------------
-- vị trí sửa link ở Profile:
-frontend/src/constants/app.js
-frontend/src/pages/ProfilePage.jsx
-frontend/src/App.jsx
-
-- vị trí sửa rule automation:
-frontend/src/automation/rules.js
-frontend/src/automation/engine.js
-frontend/src/utils/storage.js
-frontend/src/context/DashboardRuntimeContext.jsx
-
-- vị trí mở rộng sensor/device:
-SQL/init.sql
-src/constants/index.js
-src/services/telemetry.service.js
-src/repositories/dashboard.repo.js
-frontend/src/pages/DashboardPage.jsx
-frontend/src/components/dashboard/EnvironmentChartCard.jsx
-các file docs/API liên quan.

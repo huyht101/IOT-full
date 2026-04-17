@@ -4,7 +4,7 @@
 -- Locked runtime scope:
 -- - 1 ESP32 board
 -- - 3 sensors: TEMP, HUM, LIGHT
--- - 3 devices: LED1, LED2, LED3
+-- - 5 devices: LED1, LED2, LED3, LED4, LED5
 -- - 6 tables only
 -- =========================================================
 
@@ -114,7 +114,9 @@ INSERT INTO devices (device_code, device_name, device_type, is_active)
 VALUES
   ('LED1', 'LED 1', 'LED', 1),
   ('LED2', 'LED 2', 'LED', 1),
-  ('LED3', 'LED 3', 'LED', 1);
+  ('LED3', 'LED 3', 'LED', 1),
+  ('LED4', 'LED 4', 'LED', 1),
+  ('LED5', 'LED 5', 'LED', 1);
 
 INSERT INTO sensors (sensor_code, sensor_type, sensor_name, unit, is_active)
 VALUES

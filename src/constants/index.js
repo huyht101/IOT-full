@@ -29,6 +29,8 @@ const DEMO_DEVICES = Object.freeze([
   { device_code: 'LED1', device_name: 'LED 1', device_type: DEVICE_TYPES.LED },
   { device_code: 'LED2', device_name: 'LED 2', device_type: DEVICE_TYPES.LED },
   { device_code: 'LED3', device_name: 'LED 3', device_type: DEVICE_TYPES.LED },
+  { device_code: 'LED4', device_name: 'LED 4', device_type: DEVICE_TYPES.LED },
+  { device_code: 'LED5', device_name: 'LED 5', device_type: DEVICE_TYPES.LED },
 ]);
 
 const DEMO_SENSORS = Object.freeze([
@@ -74,6 +76,24 @@ const SENSOR_HISTORY_SORT_MAP = Object.freeze({
   value_num: 'sr.value_num',
 });
 
+const DEVICE_USAGE_BUCKET_HOURS = Object.freeze({
+  '1h': 1,
+  '2h': 2,
+  '4h': 4,
+});
+
+const DEVICE_USAGE_ACTION_FILTERS = Object.freeze({
+  ALL: 'all',
+  ON: ACTIONS.ON,
+  OFF: ACTIONS.OFF,
+});
+
+const DEVICE_USAGE_STATUS_FILTERS = Object.freeze({
+  ALL: 'all',
+  SUCCESS: 'success',
+  FAIL: 'fail',
+});
+
 const VALID_DEVICE_TYPES = Object.freeze(
   Array.from(new Set(DEMO_DEVICES.map((item) => item.device_type)))
 );
@@ -105,6 +125,9 @@ module.exports = {
   MAX_QUERY_LENGTH,
   ACTION_HISTORY_SORT_MAP,
   SENSOR_HISTORY_SORT_MAP,
+  DEVICE_USAGE_BUCKET_HOURS,
+  DEVICE_USAGE_ACTION_FILTERS,
+  DEVICE_USAGE_STATUS_FILTERS,
   VALID_DEVICE_TYPES,
   VALID_SENSOR_TYPES,
   VALID_SENSOR_CODES,

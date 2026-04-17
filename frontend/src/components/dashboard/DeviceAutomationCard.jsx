@@ -9,6 +9,8 @@ const deviceIconMap = {
   LED1: Zap,
   LED2: Lightbulb,
   LED3: Power,
+  LED4: Zap,
+  LED5: Lightbulb,
 };
 
 function DeviceAutomationCard({

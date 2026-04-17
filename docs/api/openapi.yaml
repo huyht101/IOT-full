@@ -1,10 +1,10 @@
 openapi: 3.0.3
 info:
   title: IoT Dashboard MVP API
-  version: 1.0.0
+  version: 1.1.0
   description: >
     Lightweight OpenAPI description for the current IoT Dashboard MVP backend.
-    This file reflects the five core HTTP endpoints implemented in the codebase.
+    This file reflects the six core HTTP endpoints implemented in the codebase.
 servers:
   - url: http://127.0.0.1:4000
 paths:
@@ -29,7 +29,7 @@ paths:
           required: true
           schema:
             type: string
-          description: Valid datetime string. Best sourced from the previous dashboard response.
+          description: Valid datetime string from the previous dashboard response.
       responses:
         '200':
           description: Dashboard delta update
@@ -165,6 +165,58 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ActionHistoryResponse'
+        '400':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /api/v1/device-usage:
+    get:
+      summary: Get device usage counts by time bucket
+      tags: [History]
+      parameters:
+        - in: query
+          name: device_code
+          required: true
+          schema:
+            type: string
+            enum: [LED1, LED2, LED3, LED4, LED5]
+        - in: query
+          name: action
+          schema:
+            type: string
+            enum: [all, on, off]
+            default: all
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [all, success, fail]
+            default: all
+        - in: query
+          name: from
+          schema:
+            type: string
+          description: Datetime interpreted in fixed UTC+07 when timezone is omitted.
+        - in: query
+          name: to
+          schema:
+            type: string
+          description: Datetime interpreted in fixed UTC+07 when timezone is omitted.
+        - in: query
+          name: bucket
+          schema:
+            type: string
+            enum: [1h, 2h, 4h]
+            default: 1h
+      responses:
+        '200':
+          description: Device usage series
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceUsageResponse'
         '400':
           description: Validation error
           content:
@@ -329,52 +381,13 @@ components:
         light:
           type: number
           nullable: true
-    DashboardResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessEnvelope'
-        - type: object
-          properties:
-            data:
-              type: object
-              properties:
-                devices:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/DeviceItem'
-                sensors:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SensorItem'
-                chart_pts:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ChartPoint'
-                last_ts:
-                  type: string
-                  nullable: true
-    DashboardRealtimeResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessEnvelope'
-        - type: object
-          properties:
-            data:
-              type: object
-              properties:
-                devices:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/DeviceItem'
-                sensors:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/SensorItem'
-                new_pts:
-                  type: array
-                  items:
-                    $ref: '#/components/schemas/ChartPoint'
-                new_last_ts:
-                  type: string
-                  nullable: true
+    DeviceUsageItem:
+      type: object
+      properties:
+        label:
+          type: string
+        count:
+          type: integer
     ToggleActionData:
       type: object
       properties:
@@ -393,32 +406,6 @@ components:
         acked_at:
           type: string
           nullable: true
-    ToggleSuccessResponse:
-      allOf:
-        - $ref: '#/components/schemas/SuccessEnvelope'
-        - type: object
-          properties:
-            data:
-              allOf:
-                - $ref: '#/components/schemas/ToggleActionData'
-                - type: object
-                  properties:
-                    device_state:
-                      type: object
-                      properties:
-                        state:
-                          type: integer
-                        updated_at:
-                          type: string
-                        last_action_id:
-                          type: integer
-    ToggleFailureResponse:
-      allOf:
-        - $ref: '#/components/schemas/ErrorEnvelope'
-        - type: object
-          properties:
-            data:
-              $ref: '#/components/schemas/ToggleActionData'
     ActionHistoryItem:
       type: object
       properties:
@@ -475,6 +462,78 @@ components:
           type: string
         sort_dir:
           type: string
+    DashboardResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                devices:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceItem'
+                sensors:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SensorItem'
+                chart_pts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChartPoint'
+                last_ts:
+                  type: string
+                  nullable: true
+    DashboardRealtimeResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                devices:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceItem'
+                sensors:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SensorItem'
+                new_pts:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ChartPoint'
+                new_last_ts:
+                  type: string
+                  nullable: true
+    ToggleSuccessResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              allOf:
+                - $ref: '#/components/schemas/ToggleActionData'
+                - type: object
+                  properties:
+                    device_state:
+                      type: object
+                      properties:
+                        state:
+                          type: integer
+                        updated_at:
+                          type: string
+                        last_action_id:
+                          type: integer
+    ToggleFailureResponse:
+      allOf:
+        - $ref: '#/components/schemas/ErrorEnvelope'
+        - type: object
+          properties:
+            data:
+              $ref: '#/components/schemas/ToggleActionData'
     ActionHistoryResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessEnvelope'
@@ -489,6 +548,30 @@ components:
                     $ref: '#/components/schemas/ActionHistoryItem'
             meta:
               $ref: '#/components/schemas/PaginationMeta'
+    DeviceUsageResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessEnvelope'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                device_code:
+                  type: string
+                action:
+                  type: string
+                status:
+                  type: string
+                from:
+                  type: string
+                to:
+                  type: string
+                bucket:
+                  type: string
+                items:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/DeviceUsageItem'
     SensorHistoryResponse:
       allOf:
         - $ref: '#/components/schemas/SuccessEnvelope'
