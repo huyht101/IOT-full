@@ -78,6 +78,7 @@ function DeviceUsagePage() {
   const requestInFlightRef = useRef(false);
   const queuedRefreshRef = useRef(false);
   const mountedRef = useRef(true);
+  const useLiveDefaultRangeRef = useRef(true);
   const latestParamsRef = useRef({
     deviceCode: DEVICE_OPTIONS[0]?.value || 'LED1',
     action: 'all',
@@ -98,6 +99,21 @@ function DeviceUsagePage() {
     };
   }, [deviceCode, action, status, from, to, bucket]);
 
+  const getRequestParams = useCallback(() => {
+    const currentParams = latestParamsRef.current;
+
+    if (!useLiveDefaultRangeRef.current) {
+      return currentParams;
+    }
+
+    // Keep the untouched default range behaving like "last 24 hours"
+    // so background refreshes can pick up newly-created actions.
+    return {
+      ...currentParams,
+      ...createDefaultRange(),
+    };
+  }, []);
+
   const loadUsage = useCallback(async (options = {}) => {
     const background = Boolean(options.background);
 
@@ -113,7 +129,7 @@ function DeviceUsagePage() {
       setError('');
     }
 
-    const currentParams = latestParamsRef.current;
+    const currentParams = getRequestParams();
 
     try {
       const response = await fetchDeviceUsage({
@@ -149,7 +165,7 @@ function DeviceUsagePage() {
         void loadUsage({ background: true });
       }
     }
-  }, []);
+  }, [getRequestParams]);
 
   useEffect(() => {
     document.title = 'IoT Dashboard | Device Usage';
@@ -249,7 +265,10 @@ function DeviceUsagePage() {
               className={styles.dateInput}
               type="datetime-local"
               value={from}
-              onChange={(event) => setFrom(event.target.value)}
+              onChange={(event) => {
+                useLiveDefaultRangeRef.current = false;
+                setFrom(event.target.value);
+              }}
             />
           </label>
 
@@ -259,7 +278,10 @@ function DeviceUsagePage() {
               className={styles.dateInput}
               type="datetime-local"
               value={to}
-              onChange={(event) => setTo(event.target.value)}
+              onChange={(event) => {
+                useLiveDefaultRangeRef.current = false;
+                setTo(event.target.value);
+              }}
             />
           </label>
         </div>
