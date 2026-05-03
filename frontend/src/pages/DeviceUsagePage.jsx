@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -13,41 +14,20 @@ import EmptyState from '../components/common/EmptyState';
 import ErrorState from '../components/common/ErrorState';
 import LoadingState from '../components/common/LoadingState';
 import SelectField from '../components/common/SelectField';
-import {
-  DEVICE_OPTIONS,
-  DEVICE_USAGE_ACTION_OPTIONS,
-  DEVICE_USAGE_BUCKET_OPTIONS,
-  DEVICE_USAGE_STATUS_OPTIONS,
-} from '../constants/app';
+import { DEVICE_USAGE_STATUS_OPTIONS } from '../constants/app';
 import styles from './DeviceUsagePage.module.css';
 
 const DEVICE_USAGE_POLL_INTERVAL_MS = 5000;
 const DISPLAY_TIME_OFFSET_MS = 7 * 60 * 60 * 1000;
-const DEFAULT_RANGE_MS = 24 * 60 * 60 * 1000;
 
 function pad(value) {
   return String(value).padStart(2, '0');
 }
 
-function formatDateTimeInput(value) {
-  const parsed = new Date(value);
-  const shifted = new Date(parsed.getTime() + DISPLAY_TIME_OFFSET_MS);
+function formatDisplayDate(value) {
+  const shifted = new Date(value.getTime() + DISPLAY_TIME_OFFSET_MS);
 
-  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}T${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}`;
-}
-
-function createDefaultRange() {
-  const to = new Date();
-  const from = new Date(to.getTime() - DEFAULT_RANGE_MS);
-
-  return {
-    from: formatDateTimeInput(from),
-    to: formatDateTimeInput(to),
-  };
-}
-
-function toQueryDateTime(value) {
-  return value ? `${value.replace('T', ' ')}:00` : '';
+  return `${shifted.getUTCFullYear()}-${pad(shifted.getUTCMonth() + 1)}-${pad(shifted.getUTCDate())}`;
 }
 
 function UsageTooltip({ active, payload, label }) {
@@ -58,19 +38,18 @@ function UsageTooltip({ active, payload, label }) {
   return (
     <div className={styles.tooltip}>
       <div className={styles.tooltipLabel}>{label}</div>
-      <div className={styles.tooltipValue}>Count: {payload[0].value}</div>
+      {payload.map((entry) => (
+        <div key={entry.dataKey} className={styles.tooltipValue}>
+          {entry.name}: {entry.value}
+        </div>
+      ))}
     </div>
   );
 }
 
 function DeviceUsagePage() {
-  const defaultRange = useRef(createDefaultRange()).current;
-  const [deviceCode, setDeviceCode] = useState(DEVICE_OPTIONS[0]?.value || 'LED1');
-  const [action, setAction] = useState('all');
-  const [status, setStatus] = useState('all');
-  const [from, setFrom] = useState(defaultRange.from);
-  const [to, setTo] = useState(defaultRange.to);
-  const [bucket, setBucket] = useState('2h');
+  const [selectedDate, setSelectedDate] = useState(() => formatDisplayDate(new Date()));
+  const [status, setStatus] = useState('success');
   const [usageData, setUsageData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -78,41 +57,17 @@ function DeviceUsagePage() {
   const requestInFlightRef = useRef(false);
   const queuedRefreshRef = useRef(false);
   const mountedRef = useRef(true);
-  const useLiveDefaultRangeRef = useRef(true);
   const latestParamsRef = useRef({
-    deviceCode: DEVICE_OPTIONS[0]?.value || 'LED1',
-    action: 'all',
-    status: 'all',
-    from: defaultRange.from,
-    to: defaultRange.to,
-    bucket: '2h',
+    date: formatDisplayDate(new Date()),
+    status: 'success',
   });
 
   useEffect(() => {
     latestParamsRef.current = {
-      deviceCode,
-      action,
+      date: selectedDate,
       status,
-      from,
-      to,
-      bucket,
     };
-  }, [deviceCode, action, status, from, to, bucket]);
-
-  const getRequestParams = useCallback(() => {
-    const currentParams = latestParamsRef.current;
-
-    if (!useLiveDefaultRangeRef.current) {
-      return currentParams;
-    }
-
-    // Keep the untouched default range behaving like "last 24 hours"
-    // so background refreshes can pick up newly-created actions.
-    return {
-      ...currentParams,
-      ...createDefaultRange(),
-    };
-  }, []);
+  }, [selectedDate, status]);
 
   const loadUsage = useCallback(async (options = {}) => {
     const background = Boolean(options.background);
@@ -129,16 +84,12 @@ function DeviceUsagePage() {
       setError('');
     }
 
-    const currentParams = getRequestParams();
+    const currentParams = latestParamsRef.current;
 
     try {
       const response = await fetchDeviceUsage({
-        device_code: currentParams.deviceCode,
-        action: currentParams.action,
+        date: currentParams.date,
         status: currentParams.status,
-        from: toQueryDateTime(currentParams.from),
-        to: toQueryDateTime(currentParams.to),
-        bucket: currentParams.bucket,
       });
 
       if (!mountedRef.current) {
@@ -165,7 +116,7 @@ function DeviceUsagePage() {
         void loadUsage({ background: true });
       }
     }
-  }, [getRequestParams]);
+  }, []);
 
   useEffect(() => {
     document.title = 'IoT Dashboard | Device Usage';
@@ -178,7 +129,7 @@ function DeviceUsagePage() {
 
   useEffect(() => {
     void loadUsage();
-  }, [loadUsage, deviceCode, action, status, from, to, bucket]);
+  }, [loadUsage, selectedDate, status]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -210,78 +161,34 @@ function DeviceUsagePage() {
     );
   }
 
+  const chartItems = usageData?.items || [];
+
   return (
     <div className={styles.page}>
       <div className={styles.pageHeader}>
         <h1 className={styles.title}>Device Usage</h1>
-        <p className={styles.subtitle}>Count device actions by time bucket for one selected device.</p>
+        <p className={styles.subtitle}>Daily on/off counts for all five devices on the selected UTC+07 date.</p>
       </div>
 
       <section className={styles.filtersCard}>
         <div className={styles.filtersGrid}>
           <label className={styles.field}>
-            <span className={styles.fieldLabel}>Device</span>
-            <SelectField
-              ariaLabel="Select device"
-              value={deviceCode}
-              options={DEVICE_OPTIONS}
-              onChange={setDeviceCode}
-            />
-          </label>
-
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>Action</span>
-            <SelectField
-              ariaLabel="Select action filter"
-              value={action}
-              options={DEVICE_USAGE_ACTION_OPTIONS}
-              onChange={setAction}
+            <span className={styles.fieldLabel}>Date</span>
+            <input
+              className={styles.dateInput}
+              type="date"
+              value={selectedDate}
+              onChange={(event) => setSelectedDate(event.target.value)}
             />
           </label>
 
           <label className={styles.field}>
             <span className={styles.fieldLabel}>Status</span>
             <SelectField
-              ariaLabel="Select status filter"
+              ariaLabel="Select usage status"
               value={status}
               options={DEVICE_USAGE_STATUS_OPTIONS}
               onChange={setStatus}
-            />
-          </label>
-
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>Bucket</span>
-            <SelectField
-              ariaLabel="Select time bucket"
-              value={bucket}
-              options={DEVICE_USAGE_BUCKET_OPTIONS}
-              onChange={setBucket}
-            />
-          </label>
-
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>From</span>
-            <input
-              className={styles.dateInput}
-              type="datetime-local"
-              value={from}
-              onChange={(event) => {
-                useLiveDefaultRangeRef.current = false;
-                setFrom(event.target.value);
-              }}
-            />
-          </label>
-
-          <label className={styles.field}>
-            <span className={styles.fieldLabel}>To</span>
-            <input
-              className={styles.dateInput}
-              type="datetime-local"
-              value={to}
-              onChange={(event) => {
-                useLiveDefaultRangeRef.current = false;
-                setTo(event.target.value);
-              }}
             />
           </label>
         </div>
@@ -294,36 +201,47 @@ function DeviceUsagePage() {
       <section className={styles.chartCard}>
         <div className={styles.chartHeader}>
           <div>
-            <h2 className={styles.chartTitle}>Usage Count</h2>
+            <h2 className={styles.chartTitle}>Daily Usage Count</h2>
             <p className={styles.chartCaption}>
-              {usageData?.device_code || deviceCode} | {usageData?.action || action} | {usageData?.status || status}
+              {usageData?.date || selectedDate} | {usageData?.status || status} | {usageData?.timezone || 'UTC+07'}
             </p>
           </div>
         </div>
 
-        {usageData?.items?.length ? (
+        {chartItems.length ? (
           <div className={styles.chartWrap}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={usageData.items}>
+              <BarChart data={chartItems} barGap={10} barCategoryGap="20%">
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis
-                  dataKey="label"
-                  angle={-20}
-                  textAnchor="end"
-                  height={78}
+                  dataKey="device_name"
                   tick={{ fontSize: 12, fill: '#667085' }}
                   interval={0}
                 />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#667085' }} />
                 <Tooltip content={<UsageTooltip />} />
-                <Bar dataKey="count" fill="#6268ef" radius={[8, 8, 0, 0]} maxBarSize={38} />
+                <Legend />
+                <Bar
+                  dataKey="on_count"
+                  name="On"
+                  fill="#6268ef"
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={34}
+                />
+                <Bar
+                  dataKey="off_count"
+                  name="Off"
+                  fill="#f59e0b"
+                  radius={[8, 8, 0, 0]}
+                  maxBarSize={34}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
         ) : (
           <EmptyState
-            title="No usage buckets available"
-            message="Adjust the filters or wait for device actions to populate this view."
+            title="No device usage available"
+            message="Wait for device actions or select another date."
           />
         )}
       </section>

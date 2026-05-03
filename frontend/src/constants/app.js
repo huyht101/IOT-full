@@ -38,22 +38,9 @@ export const STATUS_FILTER_OPTIONS = [
   { label: 'Fail', value: 'FAIL' },
 ];
 
-export const DEVICE_USAGE_ACTION_OPTIONS = [
-  { label: 'All Actions', value: 'all' },
-  { label: 'Turn On', value: 'on' },
-  { label: 'Turn Off', value: 'off' },
-];
-
 export const DEVICE_USAGE_STATUS_OPTIONS = [
-  { label: 'All Status', value: 'all' },
   { label: 'Success', value: 'success' },
   { label: 'Fail', value: 'fail' },
-];
-
-export const DEVICE_USAGE_BUCKET_OPTIONS = [
-  { label: '1 Hour', value: '1h' },
-  { label: '2 Hours', value: '2h' },
-  { label: '4 Hours', value: '4h' },
 ];
 
 export const SENSOR_CARD_LABELS = {
@@ -67,6 +54,13 @@ export const SENSOR_TYPE_LABELS = {
   humidity: 'Humidity',
   light: 'Light',
 };
+
+export const SENSOR_FILTER_OPTIONS = [
+  { label: 'All', value: '' },
+  { label: 'Temperature', value: 'TEMP' },
+  { label: 'Humidity', value: 'HUM' },
+  { label: 'Light', value: 'LIGHT' },
+];
 
 export const PROFILE_INFO = {
   name: 'Huy Thai',

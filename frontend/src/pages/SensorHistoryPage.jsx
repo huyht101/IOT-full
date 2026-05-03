@@ -7,11 +7,11 @@ import LoadingState from '../components/common/LoadingState';
 import Pagination from '../components/common/Pagination';
 import SearchField from '../components/common/SearchField';
 import SelectField from '../components/common/SelectField';
-import { PAGE_SIZE_OPTIONS } from '../constants/app';
+import { PAGE_SIZE_OPTIONS, SENSOR_FILTER_OPTIONS } from '../constants/app';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import {
   formatDateTime,
-  formatSensorValue,
+  formatSensorHistoryValue,
   getSensorTypeLabel,
 } from '../utils/format';
 import styles from './SensorHistoryPage.module.css';
@@ -26,6 +26,8 @@ const SENSOR_HISTORY_POLL_INTERVAL_MS = 5000;
 
 function SensorHistoryPage() {
   const [query, setQuery] = useState('');
+  const [sensorCode, setSensorCode] = useState('');
+  const [valueFilter, setValueFilter] = useState('');
   const [sortDir, setSortDir] = useState('desc');
   const [pageSize, setPageSize] = useState(5);
   const [page, setPage] = useState(1);
@@ -35,6 +37,7 @@ function SensorHistoryPage() {
   const [error, setError] = useState('');
 
   const debouncedQuery = useDebouncedValue(query, 400);
+  const debouncedValueFilter = useDebouncedValue(valueFilter, 400);
   const requestInFlightRef = useRef(false);
   const queuedRefreshRef = useRef(false);
   const mountedRef = useRef(true);
@@ -42,6 +45,8 @@ function SensorHistoryPage() {
     page: 1,
     pageSize: 5,
     q: '',
+    sensorCode: '',
+    value: '',
     sortDir: 'desc',
   });
 
@@ -50,9 +55,11 @@ function SensorHistoryPage() {
       page,
       pageSize,
       q: debouncedQuery,
+      sensorCode,
+      value: debouncedValueFilter,
       sortDir,
     };
-  }, [page, pageSize, debouncedQuery, sortDir]);
+  }, [page, pageSize, debouncedQuery, sensorCode, debouncedValueFilter, sortDir]);
 
   const loadSensors = useCallback(async (options = {}) => {
     const background = Boolean(options.background);
@@ -76,6 +83,8 @@ function SensorHistoryPage() {
         page: currentParams.page,
         page_size: currentParams.pageSize,
         q: currentParams.q,
+        sensor_code: currentParams.sensorCode,
+        value: currentParams.value,
         sort_by: 'reading_id',
         sort_dir: currentParams.sortDir,
       });
@@ -118,7 +127,7 @@ function SensorHistoryPage() {
 
   useEffect(() => {
     void loadSensors();
-  }, [loadSensors, page, pageSize, debouncedQuery, sortDir]);
+  }, [loadSensors, page, pageSize, debouncedQuery, sensorCode, debouncedValueFilter, sortDir]);
 
   useEffect(() => {
     const intervalId = window.setInterval(() => {
@@ -159,14 +168,42 @@ function SensorHistoryPage() {
       </div>
 
       <section className={styles.toolbar}>
-        <SearchField
-          value={query}
-          onChange={(value) => {
-            setQuery(value);
-            setPage(1);
-          }}
-          placeholder="Search sensor readings..."
-        />
+        <div className={styles.toolbarFilters}>
+          <div className={styles.searchField}>
+            <SearchField
+              value={query}
+              onChange={(value) => {
+                setQuery(value);
+                setPage(1);
+              }}
+              placeholder="Search sensor readings..."
+            />
+          </div>
+
+          <div className={styles.sensorFilter}>
+            <SelectField
+              ariaLabel="Filter sensor"
+              value={sensorCode}
+              options={SENSOR_FILTER_OPTIONS}
+              onChange={(value) => {
+                setSensorCode(value);
+                setPage(1);
+              }}
+            />
+          </div>
+
+          <div className={styles.valueFilter}>
+            <SearchField
+              value={valueFilter}
+              onChange={(value) => {
+                setValueFilter(value);
+                setPage(1);
+              }}
+              placeholder="Filter by value"
+            />
+          </div>
+        </div>
+
         <button
           type="button"
           className={styles.sortButton}
@@ -213,7 +250,7 @@ function SensorHistoryPage() {
                         </div>
                       </td>
                       <td>{getSensorTypeLabel(item.sensor_type)}</td>
-                      <td>{formatSensorValue(item.value_num, item.unit)}</td>
+                      <td>{formatSensorHistoryValue(item.value_num)}</td>
                       <td>{formatDateTime(item.ts)}</td>
                     </tr>
                   );

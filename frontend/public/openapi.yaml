@@ -173,46 +173,25 @@ paths:
                 $ref: '#/components/schemas/ErrorEnvelope'
   /api/v1/device-usage:
     get:
-      summary: Get device usage counts by time bucket
+      summary: Get daily device usage counts for all devices
       tags: [History]
       parameters:
         - in: query
-          name: device_code
+          name: date
           required: true
           schema:
             type: string
-            enum: [LED1, LED2, LED3, LED4, LED5]
-        - in: query
-          name: action
-          schema:
-            type: string
-            enum: [all, on, off]
-            default: all
+            pattern: '^\d{4}-\d{2}-\d{2}$'
+          description: Date interpreted in fixed UTC+07 business convention.
         - in: query
           name: status
           schema:
             type: string
-            enum: [all, success, fail]
-            default: all
-        - in: query
-          name: from
-          schema:
-            type: string
-          description: Datetime interpreted in fixed UTC+07 when timezone is omitted.
-        - in: query
-          name: to
-          schema:
-            type: string
-          description: Datetime interpreted in fixed UTC+07 when timezone is omitted.
-        - in: query
-          name: bucket
-          schema:
-            type: string
-            enum: [1h, 2h, 4h]
-            default: 1h
+            enum: [success, fail]
+            default: success
       responses:
         '200':
-          description: Device usage series
+          description: Daily device usage counts
           content:
             application/json:
               schema:
@@ -384,9 +363,13 @@ components:
     DeviceUsageItem:
       type: object
       properties:
-        label:
+        device_code:
           type: string
-        count:
+        device_name:
+          type: string
+        on_count:
+          type: integer
+        off_count:
           type: integer
     ToggleActionData:
       type: object
@@ -556,17 +539,11 @@ components:
             data:
               type: object
               properties:
-                device_code:
-                  type: string
-                action:
+                date:
                   type: string
                 status:
                   type: string
-                from:
-                  type: string
-                to:
-                  type: string
-                bucket:
+                timezone:
                   type: string
                 items:
                   type: array

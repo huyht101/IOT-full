@@ -16,14 +16,22 @@
 }
 
 .toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
   gap: 12px;
 }
 
-.toolbar > :first-child {
-  width: min(520px, 100%);
+.toolbarFilters {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.6fr) minmax(160px, 0.8fr) minmax(190px, 1fr);
+  gap: 12px;
+}
+
+.searchField,
+.sensorFilter,
+.valueFilter {
+  min-width: 0;
 }
 
 .sortButton {
@@ -109,4 +117,14 @@
   background: var(--danger-soft);
   color: #dc2626;
   font-weight: 600;
+}
+
+@media (max-width: 1180px) {
+  .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbarFilters {
+    grid-template-columns: 1fr;
+  }
 }

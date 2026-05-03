@@ -73,6 +73,14 @@ export function formatSensorValue(value, unit) {
   return unit ? `${formattedValue} ${unit}` : formattedValue;
 }
 
+export function formatSensorHistoryValue(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) {
+    return EMPTY_VALUE;
+  }
+
+  return Number(value).toFixed(2).replace(/\.?0+$/, '');
+}
+
 export function getSensorCardLabel(sensor) {
   if (!sensor) {
     return 'Sensor';

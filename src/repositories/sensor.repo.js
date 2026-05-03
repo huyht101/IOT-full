@@ -16,6 +16,11 @@ function buildDisplayTimeSearchExpression(columnName) {
   return `DATE_FORMAT(DATE_ADD(${columnName}, INTERVAL ${DISPLAY_TIME_OFFSET_HOURS} HOUR), '%Y-%m-%d %H:%i:%s')`;
 }
 
+function buildDisplayValueExpression(columnName) {
+  // Match the copy-friendly numeric text shown in the Sensor History table.
+  return `TRIM(TRAILING '.' FROM TRIM(TRAILING '0' FROM CAST(${columnName} AS CHAR)))`;
+}
+
 function parseNumericSearchValue(value) {
   if (!/^\d+$/.test(String(value))) {
     return null;
@@ -108,6 +113,11 @@ function buildSensorHistoryWhere(filters) {
   if (filters.sensorCode) {
     clauses.push('s.sensor_code = ?');
     params.push(filters.sensorCode);
+  }
+
+  if (filters.value) {
+    clauses.push(`${buildDisplayValueExpression('sr.value_num')} LIKE ?`);
+    params.push(`%${filters.value}%`);
   }
 
   if (filters.from) {

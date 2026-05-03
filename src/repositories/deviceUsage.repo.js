@@ -1,51 +1,30 @@
 const { pool } = require('../config/db');
-const {
-  ACTION_STATUSES,
-  DEVICE_USAGE_ACTION_FILTERS,
-  DEVICE_USAGE_STATUS_FILTERS,
-} = require('../constants');
+const { ACTIONS } = require('../constants');
 
-async function listDeviceUsageActions(filters) {
-  const clauses = [
-    'd.device_code = ?',
-    'a.requested_at >= ?',
-    'a.requested_at <= ?',
-  ];
-  const params = [filters.deviceCode, filters.from, filters.to];
-
-  if (filters.action !== DEVICE_USAGE_ACTION_FILTERS.ALL) {
-    clauses.push('a.action = ?');
-    params.push(filters.action);
-  }
-
-  if (filters.status === DEVICE_USAGE_STATUS_FILTERS.ALL) {
-    clauses.push('a.status IN (?, ?)');
-    params.push(ACTION_STATUSES.SUCCESS, ACTION_STATUSES.FAIL);
-  } else if (filters.status === DEVICE_USAGE_STATUS_FILTERS.SUCCESS) {
-    clauses.push('a.status = ?');
-    params.push(ACTION_STATUSES.SUCCESS);
-  } else if (filters.status === DEVICE_USAGE_STATUS_FILTERS.FAIL) {
-    clauses.push('a.status = ?');
-    params.push(ACTION_STATUSES.FAIL);
-  }
-
+async function listDailyDeviceUsage(filters) {
   const [rows] = await pool.execute(
     `
       SELECT
-        a.action_id,
-        a.requested_at
-      FROM actions a
-      JOIN devices d
-        ON d.device_id = a.device_id
-      WHERE ${clauses.join(' AND ')}
-      ORDER BY a.requested_at ASC, a.action_id ASC
+        d.device_code,
+        d.device_name,
+        COALESCE(SUM(CASE WHEN a.action = ? THEN 1 ELSE 0 END), 0) AS on_count,
+        COALESCE(SUM(CASE WHEN a.action = ? THEN 1 ELSE 0 END), 0) AS off_count
+      FROM devices d
+      LEFT JOIN actions a
+        ON a.device_id = d.device_id
+       AND a.status = ?
+       AND a.requested_at >= ?
+       AND a.requested_at < ?
+      WHERE d.is_active = 1
+      GROUP BY d.device_id, d.device_code, d.device_name
+      ORDER BY d.device_id ASC
     `,
-    params
+    [ACTIONS.ON, ACTIONS.OFF, filters.statusDb, filters.from, filters.to]
   );
 
   return rows;
 }
 
 module.exports = {
-  listDeviceUsageActions,
+  listDailyDeviceUsage,
 };

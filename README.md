@@ -25,7 +25,7 @@ The system flow is:
 - Polling-based realtime dashboard
 - Manual device toggle with MQTT ACK handling
 - Action History with search, filters, pagination, and auto refresh while open
-- Device Usage chart with server-side aggregation, filters, and auto refresh while open
+- Device Usage chart with daily all-device aggregation and auto refresh while open
 - Sensor History with search across displayed fields, pagination, ID-based sort, and auto refresh while open
 - Frontend-only automation rules stored in `localStorage`
 - MQTT telemetry ingest with full active-device snapshot validation
@@ -338,7 +338,7 @@ Suggested quick demo flow:
 4. Open Dashboard and confirm live sensor/device state
 5. Send telemetry and observe dashboard updates
 6. Toggle a device and observe Action History update
-7. Open Device Usage and verify the chart changes by device, action, status, and bucket
+7. Open Device Usage and verify daily On/Off counts for all five devices
 8. Open Sensor History and verify auto refresh plus search behavior
 9. Demonstrate a frontend-only automation rule while staying on a non-Dashboard page
 

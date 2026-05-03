@@ -23,24 +23,16 @@
       "value": "LED1"
     },
     {
+      "key": "date",
+      "value": "2026-03-29"
+    },
+    {
       "key": "page",
       "value": "1"
     },
     {
       "key": "pageSize",
       "value": "10"
-    },
-    {
-      "key": "from",
-      "value": "2026-03-29 00:00:00"
-    },
-    {
-      "key": "to",
-      "value": "2026-03-29 23:59:59"
-    },
-    {
-      "key": "bucket",
-      "value": "2h"
     }
   ],
   "item": [
@@ -270,9 +262,9 @@
           "request": {
             "method": "GET",
             "header": [],
-            "description": "Get one-device usage counts grouped by time bucket in the current UTC+07 business convention.",
+            "description": "Get daily On/Off counts for all five devices in the current UTC+07 business convention.",
             "url": {
-              "raw": "{{baseUrl}}/api/v1/device-usage?device_code={{deviceCode}}&action=all&status=all&from={{from}}&to={{to}}&bucket={{bucket}}",
+              "raw": "{{baseUrl}}/api/v1/device-usage?date={{date}}&status=success",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -283,28 +275,12 @@
               ],
               "query": [
                 {
-                  "key": "device_code",
-                  "value": "{{deviceCode}}"
-                },
-                {
-                  "key": "action",
-                  "value": "all"
+                  "key": "date",
+                  "value": "{{date}}"
                 },
                 {
                   "key": "status",
-                  "value": "all"
-                },
-                {
-                  "key": "from",
-                  "value": "{{from}}"
-                },
-                {
-                  "key": "to",
-                  "value": "{{to}}"
-                },
-                {
-                  "key": "bucket",
-                  "value": "{{bucket}}"
+                  "value": "success"
                 }
               ]
             }

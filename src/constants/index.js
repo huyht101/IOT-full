@@ -76,20 +76,7 @@ const SENSOR_HISTORY_SORT_MAP = Object.freeze({
   value_num: 'sr.value_num',
 });
 
-const DEVICE_USAGE_BUCKET_HOURS = Object.freeze({
-  '1h': 1,
-  '2h': 2,
-  '4h': 4,
-});
-
-const DEVICE_USAGE_ACTION_FILTERS = Object.freeze({
-  ALL: 'all',
-  ON: ACTIONS.ON,
-  OFF: ACTIONS.OFF,
-});
-
 const DEVICE_USAGE_STATUS_FILTERS = Object.freeze({
-  ALL: 'all',
   SUCCESS: 'success',
   FAIL: 'fail',
 });
@@ -125,8 +112,6 @@ module.exports = {
   MAX_QUERY_LENGTH,
   ACTION_HISTORY_SORT_MAP,
   SENSOR_HISTORY_SORT_MAP,
-  DEVICE_USAGE_BUCKET_HOURS,
-  DEVICE_USAGE_ACTION_FILTERS,
   DEVICE_USAGE_STATUS_FILTERS,
   VALID_DEVICE_TYPES,
   VALID_SENSOR_TYPES,

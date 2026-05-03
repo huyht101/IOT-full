@@ -202,28 +202,23 @@ Allowed values:
 ### 3.5 Get Device Usage
 
 - **Method + URL:** `GET /api/v1/device-usage`
-- **Purpose:** Return one-device action counts grouped into 1-hour, 2-hour, or 4-hour buckets for the selected date range.
+- **Purpose:** Return daily on/off action counts for all active devices on one selected UTC+07 date.
 
 #### Query params
 
 | Name | Required | Description |
 | --- | --- | --- |
-| `device_code` | Yes | One selected device code such as `LED1` |
-| `action` | No | `all`, `on`, or `off`, default `all` |
-| `status` | No | `all`, `success`, or `fail`, default `all` |
-| `from` | No | Datetime lower bound interpreted in the frontend-aligned UTC+07 convention when timezone is omitted |
-| `to` | No | Datetime upper bound interpreted in the frontend-aligned UTC+07 convention when timezone is omitted |
-| `bucket` | No | `1h`, `2h`, or `4h`, default `1h` |
+| `date` | Yes | One selected date in `YYYY-MM-DD` interpreted in UTC+07 |
+| `status` | No | `success` or `fail`, default `success` |
 
 #### Behavior notes
 
 - The data source is the `actions` table.
-- Statistics are for one selected device only.
-- Grouping follows the fixed UTC+07 business/display convention.
-- If `status=all`, the API includes `SUCCESS` and `FAIL` only and excludes `PENDING`.
-- If `action=all`, the API combines `on` and `off` counts into one series.
-- The response includes zero-count buckets across the selected range.
-- The selected range cannot exceed 7 days.
+- Statistics are returned for all five active demo devices in one response.
+- The selected `date` is converted to a single local business day in the fixed UTC+07 convention.
+- `PENDING` actions are never included because the only allowed status filters are `success` and `fail`.
+- Each device row contains separate `on_count` and `off_count` values.
+- Devices with no matching actions still appear with both counts set to `0`.
 
 #### Success response example
 
@@ -231,20 +226,39 @@ Allowed values:
 {
   "ok": true,
   "data": {
-    "device_code": "LED1",
-    "action": "all",
-    "status": "all",
-    "from": "2026-03-29T00:00:00.000Z",
-    "to": "2026-03-29T12:00:00.000Z",
-    "bucket": "2h",
+    "date": "2026-04-20",
+    "status": "success",
+    "timezone": "UTC+07",
     "items": [
       {
-        "label": "2026-03-29 08:00-09:59",
-        "count": 1
+        "device_code": "LED1",
+        "device_name": "LED 1",
+        "on_count": 3,
+        "off_count": 2
       },
       {
-        "label": "2026-03-29 10:00-11:59",
-        "count": 0
+        "device_code": "LED2",
+        "device_name": "LED 2",
+        "on_count": 1,
+        "off_count": 1
+      },
+      {
+        "device_code": "LED3",
+        "device_name": "LED 3",
+        "on_count": 0,
+        "off_count": 4
+      },
+      {
+        "device_code": "LED4",
+        "device_name": "LED 4",
+        "on_count": 0,
+        "off_count": 0
+      },
+      {
+        "device_code": "LED5",
+        "device_name": "LED 5",
+        "on_count": 2,
+        "off_count": 2
       }
     ]
   }
@@ -292,8 +306,7 @@ Allowed values:
 - `q` must be `100` characters or fewer.
 - `sort_dir` must be `asc` or `desc`.
 - Sort fields are whitelist-based per endpoint.
-- `device-usage` accepts only `device_code` values from the configured device set and enforces `bucket` in `1h`, `2h`, `4h`.
-- `device-usage` rejects ranges greater than 7 days.
+- `device-usage` requires `date` in `YYYY-MM-DD` format and only accepts `status=success|fail`.
 - Invalid JSON request bodies return:
 
 ```json
@@ -313,7 +326,7 @@ Recommended quick manual test order:
 2. Call `GET /api/v1/dashboard/realtime` using the previous `last_ts`
 3. Call `POST /api/v1/devices/:device_id/toggle`
 4. Call `GET /api/v1/actions` to confirm action rows
-5. Call `GET /api/v1/device-usage` to confirm bucketed usage counts
+5. Call `GET /api/v1/device-usage` to confirm daily On/Off counts for all devices
 6. Call `GET /api/v1/sensor-readings` to confirm telemetry-backed sensor rows
 
 Useful artifacts:
