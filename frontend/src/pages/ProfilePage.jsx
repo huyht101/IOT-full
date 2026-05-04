@@ -1,6 +1,6 @@
 import {
   Braces,
-  Download,
+  FileText,
   Figma,
   Github,
 } from 'lucide-react';
@@ -9,7 +9,7 @@ import { PROFILE_INFO, RESOURCE_LINKS } from '../constants/app';
 import styles from './ProfilePage.module.css';
 
 const iconMap = {
-  pdf: Download,
+  pdf: FileText,
   api: Braces,
   github: Github,
   figma: Figma,
@@ -39,7 +39,7 @@ function ProfilePage() {
         <h2 className={styles.sectionTitle}>Developer Resources</h2>
         <div className={styles.resourceGrid}>
           {RESOURCE_LINKS.map((resource) => {
-            const Icon = iconMap[resource.id] || Download;
+            const Icon = iconMap[resource.id] || FileText;
 
             return (
               <a
